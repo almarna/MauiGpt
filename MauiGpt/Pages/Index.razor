@@ -24,6 +24,12 @@
     .input-question {
         width: 80%;
     }
+    p {
+        margin-bottom: 0.5em;
+    }
+    .answer-padding {
+        padding: 0.7rem 1rem 0rem 1rem;
+    }
 </style>
 
 <div class="chat-container">
@@ -31,9 +37,9 @@
 
     @foreach (var line in _lines)
     {
-        <p>@((MarkupString)line)</p>
+        @((MarkupString)line)
     }
-    <p>@((MarkupString)@_partMessage)</p>
+    @((MarkupString)@_partMessage)
 </div>
     <div class="chat-input">
         <input type="text" class="input-question" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
@@ -76,7 +82,9 @@
 
         if (string.IsNullOrEmpty(_chatQuestion) == false)
         {
-            var answer = await OpenAiService.Ask(_chatQuestion, CallbackPartMessage);
+            var question = _chatQuestion;
+            _chatQuestion = "";
+            var answer = await OpenAiService.Ask(question, CallbackPartMessage);
             var result = FormatAnswer(answer);
             _lines.Add(result);
         }
@@ -94,16 +102,11 @@
     private static string FormatAnswer(string data)
     {
         var formattedData = Markdown.ToHtml(data);
-        return $"<div class='card rounded bg-secondary m-2'><div class='card-body'>{formattedData}</div></div>";
+        return $"<div class='card rounded bg-secondary m-2'><div class='card-body answer-padding'>{formattedData}</div></div>";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JsRuntime.InvokeVoidAsync("scrollToEnd",_scrollList);
     }
-
-    private void AddTextz()
-    {
-    }
-
 }
