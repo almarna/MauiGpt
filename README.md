@@ -1,9 +1,8 @@
 ### TODO
 
 * Bättre färger på chat
-* Kolla hur man färgar kodblock
 * Rensning av chat (ta bort historik)
-* Svar från GPT verkar generera extra radbrytning
+* Färga sql-kodblock
 
 ### Fixa senare
 * Hantera när historik har för många token
@@ -17,4 +16,5 @@
 
 ### Fixat 
 * Fixa så att enter-knappen fungerar
-
+* Svar från GPT verkar generera extra radbrytning
+* Kolla hur man färgar kodblock

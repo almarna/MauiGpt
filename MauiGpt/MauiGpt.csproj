@@ -59,8 +59,9 @@
 
     <ItemGroup>
         <PackageReference Include="Markdig" Version="0.31.0" />
+        <PackageReference Include="Markdown.ColorCode" Version="1.0.4" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-        <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="7.0.5" />
+        <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="7.0.7" />
         <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.5" />
     </ItemGroup>
 

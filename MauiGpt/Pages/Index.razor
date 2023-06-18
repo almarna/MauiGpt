@@ -2,6 +2,7 @@
 @using Microsoft.JSInterop
 @using MauiGpt.Data
 @using Markdig
+@using Markdown.ColorCode
 @inject IJSRuntime JsRuntime
 @inject OpenAiService OpenAiService
 
@@ -56,8 +57,11 @@
 
     private string _partMessage;
 
+    private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseColorCode().Build();
+
     protected override async Task OnInitializedAsync()
     {
+
     }
 
     private async Task QuestionKeyUp(KeyboardEventArgs e)
@@ -99,9 +103,9 @@
         return formattedData;
     }
 
-    private static string FormatAnswer(string data)
+    private  string FormatAnswer(string data)
     {
-        var formattedData = Markdown.ToHtml(data);
+        var formattedData = Markdown.ToHtml(data, _markdownPipeline);
         return $"<div class='card rounded bg-secondary m-2'><div class='card-body answer-padding'>{formattedData}</div></div>";
     }
 
