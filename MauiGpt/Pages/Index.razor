@@ -6,14 +6,28 @@
 @inject OpenAiService OpenAiService
 
 <style>
-    .upper-section {
-        height: 85vh;
-        overflow-y: scroll;
-        background-color: lightgray;
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 90vh;
+    }
+    .chat-list {
+        flex: 1; /* The top div will take up all remaining space */
+        background-color: #f2f2f2;
+    }
+
+    .chat-input {
+        background-color: #ccc;
+        height: 3em;
+        padding: 4px;
+    }
+    .input-question {
+        width: 80%;
     }
 </style>
 
-<div class="upper-section" @ref="scrollList">
+<div class="chat-container">
+<div class="chat-list" @ref="_scrollList">
 
     @foreach (var line in _lines)
     {
@@ -21,19 +35,18 @@
     }
     <p>@((MarkupString)@_partMessage)</p>
 </div>
-<div class="panel panel-default">
-    <div class="panel-body">
-            <input type="text" @bind="chatQuestion" @onkeydown="HandleKeyDown">
-            <button class="btn btn-primary" @onclick="AddText">Send</button>
+    <div class="chat-input">
+        <input type="text" class="input-question" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
+        <button class="btn btn-primary" @onclick="AddText">Send</button>
     </div>
 </div>
 
 
 @code {
-    public string chatQuestion { get; set; }
+    private string _chatQuestion;
 
-    private IList<string> _lines = new List<string>();
-    private ElementReference scrollList;
+    private readonly IList<string> _lines = new List<string>();
+    private ElementReference _scrollList;
 
     private string _partMessage;
 
@@ -41,7 +54,7 @@
     {
     }
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private async Task QuestionKeyUp(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
@@ -49,24 +62,36 @@
         }
     }
 
+
     private void CallbackPartMessage(string part)
     {
-        _partMessage = ToHtml(part);
+        _partMessage = FormatAnswer(part);
         StateHasChanged();
     }
-
+    
     private async Task AddText()
     {
-        var formattedData = $"<div class='card rounded bg-primary m-2'><div class='card-body'>{chatQuestion}</div></div>";
-        _lines.Add(formattedData);
-        var answer = await OpenAiService.Ask(chatQuestion, CallbackPartMessage);
-        var result = ToHtml(answer);
-        _lines.Add(result);
-        chatQuestion = "";
+        string data = string.IsNullOrEmpty(_chatQuestion) ? "Empty input" : _chatQuestion;
+        _lines.Add(FormatQuestion(data));
+
+        if (string.IsNullOrEmpty(_chatQuestion) == false)
+        {
+            var answer = await OpenAiService.Ask(_chatQuestion, CallbackPartMessage);
+            var result = FormatAnswer(answer);
+            _lines.Add(result);
+        }
+
+        _chatQuestion = "";
         _partMessage = "";
     }
 
-    private static string ToHtml(string data)
+    private string FormatQuestion(string data)
+    {
+        var formattedData = $"<div class='card rounded bg-primary m-2'><div class='card-body'>{data}</div></div>";
+        return formattedData;
+    }
+
+    private static string FormatAnswer(string data)
     {
         var formattedData = Markdown.ToHtml(data);
         return $"<div class='card rounded bg-secondary m-2'><div class='card-body'>{formattedData}</div></div>";
@@ -74,6 +99,11 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JsRuntime.InvokeVoidAsync("scrollToEnd",scrollList);
+        await JsRuntime.InvokeVoidAsync("scrollToEnd",_scrollList);
     }
+
+    private void AddTextz()
+    {
+    }
+
 }
