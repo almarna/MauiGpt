@@ -1,0 +1,35 @@
+**/appsettings.json
+
+# Build results
+/bin/
+/obj/
+
+# .NET Core
+*.dll
+*.exe
+*.pdb
+*.user
+*.suo
+*.tmp
+*.log
+*/bin/*
+*/obj/*
+
+# Visual Studio files
+.vs/
+*.userprefs
+*.usertasks
+*.sln.docstates
+
+# MAUI-specific files
+**/bin/**/*.*
+**/obj/**/*.*
+**/*.sln.ide-shm
+**/*.sln.ide-wal
+**/packages/
+**/bundleconfig.json
+**/mauiroot.config
+**/MauiCheck.targets
+**/MauiCheck.props
+**/Maui.targets
+**/Maui.props

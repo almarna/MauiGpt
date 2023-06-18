@@ -1,0 +1,79 @@
+﻿@page "/"
+@using Microsoft.JSInterop
+@using MauiGpt.Data
+@using Markdig
+@inject IJSRuntime JsRuntime
+@inject OpenAiService OpenAiService
+
+<style>
+    .upper-section {
+        height: 85vh;
+        overflow-y: scroll;
+        background-color: lightgray;
+    }
+</style>
+
+<div class="upper-section" @ref="scrollList">
+
+    @foreach (var line in _lines)
+    {
+        <p>@((MarkupString)line)</p>
+    }
+    <p>@((MarkupString)@_partMessage)</p>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+            <input type="text" @bind="chatQuestion" @onkeydown="HandleKeyDown">
+            <button class="btn btn-primary" @onclick="AddText">Send</button>
+    </div>
+</div>
+
+
+@code {
+    public string chatQuestion { get; set; }
+
+    private IList<string> _lines = new List<string>();
+    private ElementReference scrollList;
+
+    private string _partMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await AddText();
+        }
+    }
+
+    private void CallbackPartMessage(string part)
+    {
+        _partMessage = ToHtml(part);
+        StateHasChanged();
+    }
+
+    private async Task AddText()
+    {
+        var formattedData = $"<div class='card rounded bg-primary m-2'><div class='card-body'>{chatQuestion}</div></div>";
+        _lines.Add(formattedData);
+        var answer = await OpenAiService.Ask(chatQuestion, CallbackPartMessage);
+        var result = ToHtml(answer);
+        _lines.Add(result);
+        chatQuestion = "";
+        _partMessage = "";
+    }
+
+    private static string ToHtml(string data)
+    {
+        var formattedData = Markdown.ToHtml(data);
+        return $"<div class='card rounded bg-secondary m-2'><div class='card-body'>{formattedData}</div></div>";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JsRuntime.InvokeVoidAsync("scrollToEnd",scrollList);
+    }
+}
