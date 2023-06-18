@@ -50,6 +50,14 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Remove="appsettings.json-sample" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="appsettings.json-sample" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Markdig" Version="0.31.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
         <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="7.0.5" />
