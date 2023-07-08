@@ -67,4 +67,8 @@ public class OpenAiService
         }
     }
 
+    public void ClearHistory()
+    {
+        _chatCompletionsOptions.Messages.Clear();
+    }
 }

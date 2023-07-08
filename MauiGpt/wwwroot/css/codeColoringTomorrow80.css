@@ -1,0 +1,85 @@
+﻿pre code.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 1em;
+    font-family: Menlo, Monaco, Consolas, monospace;
+    border: 1px solid #ccc;
+}
+
+code {
+    color: blue;
+}
+
+code.hljs {
+    padding: 3px 5px
+}
+
+.hljs {
+    background: #2d2d2d;
+    color: #cccccc;
+}
+
+.hljs-number, .hljs-quote, .hljs-string {
+    color: #33cc33;
+}
+
+
+.hljs-deletion, .hljs-selector-class, .hljs-selector-id, .hljs-template-tag, .hljs-type {
+    color: #f99157;
+}
+
+.hljs-tag .hljs-attr, .hljs-tag .hljs-name {
+    color: #ffcc66;
+}
+
+.hljs-comment {
+    color: #999999;
+}
+
+
+.hljs-punctuation, .hljs-tag {
+    color: #f2777a;
+}
+
+.hljs-keyword {
+    color: #cc99cc;
+}
+
+.hljs-attribute, .hljs-doctag, .hljs-meta .hljs-keyword, .hljs-name, .hljs-selector-tag {
+    font-weight: 700
+}
+
+
+.hljs-section, .hljs-title {
+    color: #ffcc66;
+    font-weight: 700
+}
+
+.hljs-link, .hljs-operator, .hljs-regexp, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-symbol, .hljs-template-variable, .hljs-variable {
+    color: #99cc99;
+}
+
+/* Oförändrad */
+.hljs-literal {
+    color: #695
+}
+
+.hljs-addition, .hljs-built_in, .hljs-bullet, .hljs-code {
+    color: #f99157;
+}
+
+.hljs-meta {
+    color: #1f7199
+}
+
+.hljs-meta .hljs-string {
+    color: #38a
+}
+
+.hljs-emphasis {
+    font-style: italic
+}
+
+.hljs-strong {
+    font-weight: 700
+}

@@ -8,11 +8,21 @@
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/app.css" rel="stylesheet" />
     <link href="MauiGpt.styles.css" rel="stylesheet" />
+    <link href="css/codeColoringTomorrow80.css" rel="stylesheet" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>
+        colorCodeblock = (htmlContent) => {
+            return hljs.highlightAuto(htmlContent).value;
+        };
+
+        colorAllCode = () => {
+            hljs.highlightAll();
+        };
+
+    </script>
 </head>
 
 <body>
-
-
     <div class="status-bar-safe-area"></div>
 
     <div id="app">Loading...</div>

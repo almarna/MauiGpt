@@ -3,7 +3,7 @@
 @using MauiGpt.Data
 @using Markdig
 @using Markdown.ColorCode
-@inject IJSRuntime JsRuntime
+@inject IJSRuntime JS
 @inject OpenAiService OpenAiService
 
 <style>
@@ -31,6 +31,13 @@
     .answer-padding {
         padding: 0.7rem 1rem 0rem 1rem;
     }
+
+/*    pre code {
+        background-color: #eee;
+        border: 1px solid #999;
+        display: block;
+        padding: 20px;
+    }*/
 </style>
 
 <div class="chat-container">
@@ -45,6 +52,7 @@
     <div class="chat-input">
         <input type="text" class="input-question" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
         <button class="btn btn-primary" @onclick="AddText">Send</button>
+        <button class="btn btn-secondary" @onclick="ClearHistory">Clear</button>
     </div>
 </div>
 
@@ -57,11 +65,32 @@
 
     private string _partMessage;
 
-    private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseColorCode().Build();
+    // private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseColorCode().Build();
 
     protected override async Task OnInitializedAsync()
     {
-
+       var trans = await ColorCodeblock(@"
+for (int i = 0; i < n; i++)
+{
+    if (i == 0)
+    {
+        Console.Write(""{ 0}
+        "", a);
+    }
+    else if (i == 1)
+    {
+        Console.Write(""{0} "", b);
+    }
+    else
+    {
+        c = a + b;
+        a = b;
+        b = c;
+        Console.Write(""{0} "", c);
+    }
+}
+");
+//        _partMessage = $"<pre><code>{trans}</code></pre>";
     }
 
     private async Task QuestionKeyUp(KeyboardEventArgs e)
@@ -78,7 +107,13 @@
         _partMessage = FormatAnswer(part);
         StateHasChanged();
     }
-    
+
+    private void ClearHistory()
+    {
+        OpenAiService.ClearHistory();
+        _lines.Add(FormatQuestion("History Cleared!"));
+    }
+
     private async Task AddText()
     {
         string data = string.IsNullOrEmpty(_chatQuestion) ? "Empty input" : _chatQuestion;
@@ -90,6 +125,7 @@
             _chatQuestion = "";
             var answer = await OpenAiService.Ask(question, CallbackPartMessage);
             var result = FormatAnswer(answer);
+//            var colored = await ColorCodeblock(result);
             _lines.Add(result);
         }
 
@@ -99,18 +135,31 @@
 
     private string FormatQuestion(string data)
     {
-        var formattedData = $"<div class='card rounded bg-primary m-2'><div class='card-body'>{data}</div></div>";
+        var formattedData = $"<div class='card rounded bg-primary m-2'><div class='card-body answer-padding'>{data}</div></div>";
         return formattedData;
     }
 
     private  string FormatAnswer(string data)
     {
-        var formattedData = Markdown.ToHtml(data, _markdownPipeline);
+        var formattedData = Markdown.ToHtml(data);
+//        var formattedData = Markdown.ToHtml(data, _markdownPipeline);
         return $"<div class='card rounded bg-secondary m-2'><div class='card-body answer-padding'>{formattedData}</div></div>";
+    }
+
+    private async Task<string> ColorCodeblock(string uncolored)
+    {
+        return await JS.InvokeAsync<string>("colorCodeblock", uncolored);
+
+    }
+
+    private async Task ColorAllCode()
+    {
+        await JS.InvokeVoidAsync("colorAllCode");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JsRuntime.InvokeVoidAsync("scrollToEnd",_scrollList);
+        await JS.InvokeVoidAsync("colorAllCode");
+        await JS.InvokeVoidAsync("scrollToEnd",_scrollList);
     }
 }
