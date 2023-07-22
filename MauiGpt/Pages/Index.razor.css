@@ -1,0 +1,130 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.bottom {
+    height: 3.5em;
+    background: var(--input-bg);
+}
+
+.top {
+    flex-grow: 1;
+    background: var(--chat-bg);
+
+}
+
+.scroll-list {
+    height: 100%;
+    overflow: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.gpt-question {
+    width: 98%;
+    background: var(--chat-question-bg);
+    color: var(--chat-question-text);
+    border-top-left-radius: 0.5em;
+    border-bottom-left-radius: 0.5em;
+    padding: 0.3em;
+    padding-left: 1em;
+    margin-top: 0.5em;
+    margin-left: auto;
+}
+
+.gpt-answer {
+    width: 98%;
+    background: var(--chat-answer-bg);
+    color: var(--chat-answer-text);
+    border-top-right-radius: 0.5em;
+    border-bottom-right-radius: 0.5em;
+    padding: 0.3em;
+    margin-top: 0.5em;
+    margin-right: auto;
+}
+
+p {
+    margin-bottom: 0.5em;
+}
+
+.answer-padding {
+    padding: 0.7rem 1rem 0rem 1rem;
+}
+
+.chat-input-container {
+    background: var(--input-field);
+    margin: 0.5em;
+    border-radius: 0.5em;
+    padding: 0.3em;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    padding-left: 0.8em;
+    padding-right: 1em;
+}
+
+.chat-input-field {
+    background: none;
+    border: none;
+    width: 80%;
+    font-size: 120%;
+    color: var(--input-text);
+}
+
+.chat-input-field:focus {
+        outline: none;
+    }
+
+.chat-input-send {
+    display: inline-block;
+    padding: 0.5em;
+    background-color: #007bff; /* set the background color */
+    color: white; /* set the font color */
+    border: none; /* remove the default border */
+    border-radius: 5px; /* round the edges */
+    text-decoration: none; /* remove the underline */
+    text-align: center;
+    cursor: pointer;
+    width: 8%;
+}
+
+.chat-input-clear {
+    display: inline-block;
+    padding: 0.5em;
+    background-color: #aa1111; /* set the background color */
+    color: white; /* set the font color */
+    border: none; /* remove the default border */
+    border-radius: 5px; /* round the edges */
+    text-decoration: none; /* remove the underline */
+    text-align: center;
+    cursor: pointer;
+    width: 8%
+}
+
+/*input,
+textarea {
+  background: none;
+  color: $muted-color;
+  font-size: 18px;
+  padding: 10px 10px 10px 5px;
+  display: block;
+  width: $width;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid $muted-color;
+  &:focus {
+    outline: none;
+  }
+  &:focus ~ label,
+  &:valid ~ label {
+    top: -14px;
+    font-size: 12px;
+    color: $hl-color;
+  }
+  &:focus ~ .bar:before {
+    width: $width;
+  }
+}*/

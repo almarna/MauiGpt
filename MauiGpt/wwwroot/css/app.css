@@ -1,25 +1,21 @@
-﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
-
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+﻿body {
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
 }
 
-h1:focus {
-    outline: none;
+.nav-link {
+    text-decoration: none;
+    margin-bottom: 0.2em;
+    color: var(--menu-text);
 }
 
-a, .btn-link {
-    color: #0071c1;
+.active {
+    color: var(--menu-active);
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-.content {
-    padding-top: 1.1rem;
+#app {
+    height: 100%;
 }
 
 .valid.modified:not([type=checkbox]) {

@@ -3,56 +3,44 @@
 @using MauiGpt.Data
 @using Markdig
 @using Markdown.ColorCode
+@using MauiGpt.Dto
 @inject IJSRuntime JS
 @inject OpenAiService OpenAiService
 
-<style>
-    .chat-container {
-        display: flex;
-        flex-direction: column;
-        height: 90vh;
-    }
-    .chat-list {
-        flex: 1; /* The top div will take up all remaining space */
-        background-color: #f2f2f2;
-    }
 
-    .chat-input {
-        background-color: #ccc;
-        height: 3em;
-        padding: 4px;
-    }
-    .input-question {
-        width: 80%;
-    }
-    p {
-        margin-bottom: 0.5em;
-    }
-    .answer-padding {
-        padding: 0.7rem 1rem 0rem 1rem;
-    }
-
-/*    pre code {
-        background-color: #eee;
-        border: 1px solid #999;
-        display: block;
-        padding: 20px;
-    }*/
-</style>
-
-<div class="chat-container">
-<div class="chat-list" @ref="_scrollList">
-
-    @foreach (var line in _lines)
-    {
-        @((MarkupString)line)
-    }
-    @((MarkupString)@_partMessage)
-</div>
-    <div class="chat-input">
-        <input type="text" class="input-question" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
-        <button class="btn btn-primary" @onclick="AddText">Send</button>
-        <button class="btn btn-secondary" @onclick="ClearHistory">Clear</button>
+<div class="container">
+    <div class="top">
+         <div class="scroll-list" @ref="_scrollList">
+            @foreach (var line in _lines)
+            {
+                switch (line.Type)
+                {
+                    case ChatMessageType.Answer:
+                        <div class="gpt-answer">
+                            @((MarkupString)line.Message)
+                        </div>
+                        break;
+                    case ChatMessageType.Question:
+                        <div class="gpt-question">
+                            @((MarkupString)line.Message)
+                        </div>
+                        break;
+                }
+            }
+            @if (string.IsNullOrWhiteSpace(_partMessage) == false)
+            {
+                <div class="gpt-answer">
+                    @((MarkupString)@_partMessage)
+                </div>
+            }
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="chat-input-container">
+            <input class="chat-input-field" type="text" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
+            <a class="chat-input-send" @onclick="AddText">Send</a>
+            <a class="chat-input-clear" @onclick="ClearHistory">Clear</a>
+        </div>
     </div>
 </div>
 
@@ -60,7 +48,7 @@
 @code {
     private string _chatQuestion;
 
-    private readonly IList<string> _lines = new List<string>();
+    private readonly IList<ChatMessageDto> _lines = new List<ChatMessageDto>();
     private ElementReference _scrollList;
 
     private string _partMessage;
@@ -69,27 +57,27 @@
 
     protected override async Task OnInitializedAsync()
     {
-       var trans = await ColorCodeblock(@"
-for (int i = 0; i < n; i++)
-{
-    if (i == 0)
-    {
-        Console.Write(""{ 0}
-        "", a);
-    }
-    else if (i == 1)
-    {
-        Console.Write(""{0} "", b);
-    }
-    else
-    {
-        c = a + b;
-        a = b;
-        b = c;
-        Console.Write(""{0} "", c);
-    }
-}
-");
+//       var trans = await ColorCodeblock(@"
+//for (int i = 0; i < n; i++)
+//{
+//    if (i == 0)
+//    {
+//        Console.Write(""{ 0}
+//        "", a);
+//    }
+//    else if (i == 1)
+//    {
+//        Console.Write(""{0} "", b);
+//    }
+//    else
+//    {
+//        c = a + b;
+//        a = b;
+//        b = c;
+//        Console.Write(""{0} "", c);
+//    }
+//}
+//");
 //        _partMessage = $"<pre><code>{trans}</code></pre>";
     }
 
@@ -104,46 +92,44 @@ for (int i = 0; i < n; i++)
 
     private void CallbackPartMessage(string part)
     {
-        _partMessage = FormatAnswer(part);
+        _partMessage = Markdown.ToHtml(part);
         StateHasChanged();
     }
 
     private void ClearHistory()
     {
         OpenAiService.ClearHistory();
-        _lines.Add(FormatQuestion("History Cleared!"));
+        AddQuestion("History Cleared!");
+//        _lines.Add(FormatQuestion("History Cleared!"));
+    }
+
+    private void AddQuestion(string question)
+    {
+        _lines.Add(new ChatMessageDto { Type=ChatMessageType.Question, Message=question});
+    }
+
+    private void AddAnswer(string answer)
+    {
+        var formattedAnswer = Markdown.ToHtml(answer);
+        _lines.Add(new ChatMessageDto { Type = ChatMessageType.Answer, Message = formattedAnswer });
     }
 
     private async Task AddText()
     {
-        string data = string.IsNullOrEmpty(_chatQuestion) ? "Empty input" : _chatQuestion;
-        _lines.Add(FormatQuestion(data));
-
-        if (string.IsNullOrEmpty(_chatQuestion) == false)
+        if (string.IsNullOrEmpty(_chatQuestion))
         {
-            var question = _chatQuestion;
+            AddQuestion("Empty input");
+        }
+        else
+        {
+            var question = CleanQuestion(_chatQuestion);
+            AddQuestion(question);
             _chatQuestion = "";
             var answer = await OpenAiService.Ask(question, CallbackPartMessage);
-            var result = FormatAnswer(answer);
-//            var colored = await ColorCodeblock(result);
-            _lines.Add(result);
+            AddAnswer(answer);
         }
 
-        _chatQuestion = "";
         _partMessage = "";
-    }
-
-    private string FormatQuestion(string data)
-    {
-        var formattedData = $"<div class='card rounded bg-primary m-2'><div class='card-body answer-padding'>{data}</div></div>";
-        return formattedData;
-    }
-
-    private  string FormatAnswer(string data)
-    {
-        var formattedData = Markdown.ToHtml(data);
-//        var formattedData = Markdown.ToHtml(data, _markdownPipeline);
-        return $"<div class='card rounded bg-secondary m-2'><div class='card-body answer-padding'>{formattedData}</div></div>";
     }
 
     private async Task<string> ColorCodeblock(string uncolored)
@@ -152,14 +138,18 @@ for (int i = 0; i < n; i++)
 
     }
 
-    private async Task ColorAllCode()
-    {
-        await JS.InvokeVoidAsync("colorAllCode");
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JS.InvokeVoidAsync("colorAllCode");
         await JS.InvokeVoidAsync("scrollToEnd",_scrollList);
+    }
+
+    private string CleanQuestion(string input)
+    {
+        string result = input
+            .Replace("<", "[")
+            .Replace(">", "]");
+
+        return result;
     }
 }

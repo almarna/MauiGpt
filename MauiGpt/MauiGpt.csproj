@@ -65,4 +65,8 @@
         <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.5" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Dto\" />
+    </ItemGroup>
+
 </Project>

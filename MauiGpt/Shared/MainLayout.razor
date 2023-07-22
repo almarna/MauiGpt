@@ -1,17 +1,12 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<div class="container">
+    <div class="left">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">Home</NavLink>
+                <NavLink class="nav-link" href="settings">Settings</NavLink>
     </div>
-
-    <main>
-        <div class="top-row px-4">
-            <h1>Maui GPT</h1>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    <div class ="right">
+        <div class="header">Maui GPT</div>
+        <div class="body">@Body</div>
+    </div>
 </div>

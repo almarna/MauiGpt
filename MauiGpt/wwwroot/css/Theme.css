@@ -1,0 +1,15 @@
+﻿:root {
+    --chat-bg: #3d3d3e;
+    --input-bg: #3d3d3e;
+    --input-field: #999999;
+    --input-text: #111111;
+    --menu-bg: #222222;
+    --menu-text: #aaaa77;
+    --menu-active: #ffffdd;
+    --main-bg: #222222;
+    --main-text: #ffffdd;
+    --chat-question-bg: #555555;
+    --chat-question-text: #ffffdd;
+    --chat-answer-bg: #555565;
+    --chat-answer-text: #ddddee;
+}
