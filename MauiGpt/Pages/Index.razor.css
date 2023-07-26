@@ -12,11 +12,14 @@
 .top {
     flex-grow: 1;
     background: var(--chat-bg);
+    height: 100%;
+    overflow: auto;
 
 }
 
 .scroll-list {
-    height: 100%;
+    width: 100%;
+    height: calc(100vh - 6em);
     overflow: auto;
     overflow-x: hidden;
     display: flex;

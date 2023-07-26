@@ -4,8 +4,10 @@
 @using Markdig
 @using Markdown.ColorCode
 @using MauiGpt.Dto
+@using System.Text
 @inject IJSRuntime JS
 @inject OpenAiService OpenAiService
+@inject MarkdownToHtml MD
 
 
 <div class="container">
@@ -53,8 +55,6 @@
 
     private string _partMessage;
 
-    // private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseColorCode().Build();
-
     protected override async Task OnInitializedAsync()
     {
 //       var trans = await ColorCodeblock(@"
@@ -90,10 +90,35 @@
     }
 
 
-    private void CallbackPartMessage(string part)
+    private async Task CallbackPartMessage(string part)
     {
-        _partMessage = Markdown.ToHtml(part);
+        //_partMessage = Markdown.ToHtml(part);
+        //_partMessage = await MD.Convert(part);
+        _partMessage = await ConvertMarkdownToHtml(part);
         StateHasChanged();
+    }
+
+    private async Task<string> ConvertMarkdownToHtml(string markdown)
+    {
+        var blocks = MD.GetBlocks(markdown);
+
+        StringBuilder builder = new StringBuilder();
+
+        foreach (var block in blocks)
+        {
+            if (block.type == MarkdownToHtml.MdText)
+            {
+                var html = Markdown.ToHtml(block.content);
+                builder.Append(html);
+            }
+            else
+            {
+                string colored = await ColorCodeblock(block.content);
+                builder.Append($"<pre><code class='hljs'>{colored}</pre></code>");
+            }
+        }
+
+       return builder.ToString();
     }
 
     private void ClearHistory()
@@ -108,9 +133,11 @@
         _lines.Add(new ChatMessageDto { Type=ChatMessageType.Question, Message=question});
     }
 
-    private void AddAnswer(string answer)
+    private async Task AddAnswer(string answer)
     {
-        var formattedAnswer = Markdown.ToHtml(answer);
+        //var formattedAnswer = Markdown.ToHtml(answer);
+        // var formattedAnswer = await MD.Convert(answer);
+        var formattedAnswer = await ConvertMarkdownToHtml(answer);
         _lines.Add(new ChatMessageDto { Type = ChatMessageType.Answer, Message = formattedAnswer });
     }
 
@@ -126,7 +153,7 @@
             AddQuestion(question);
             _chatQuestion = "";
             var answer = await OpenAiService.Ask(question, CallbackPartMessage);
-            AddAnswer(answer);
+            await AddAnswer(answer);
         }
 
         _partMessage = "";
@@ -140,8 +167,8 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JS.InvokeVoidAsync("colorAllCode");
-        await JS.InvokeVoidAsync("scrollToEnd",_scrollList);
+        //await JS.InvokeVoidAsync("colorAllCode");
+        //await JS.InvokeVoidAsync("scrollToEnd",_scrollList);
     }
 
     private string CleanQuestion(string input)

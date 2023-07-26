@@ -16,6 +16,7 @@
 
 #app {
     height: 100%;
+    color: gray;
 }
 
 .valid.modified:not([type=checkbox]) {

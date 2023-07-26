@@ -24,6 +24,7 @@ public static class MauiProgram
 
 		builder.Services.AddSingleton<WeatherForecastService>();
         builder.Services.AddSingleton<OpenAiService>();
+        builder.Services.AddSingleton<MarkdownToHtml>();
 
         return builder.Build();
 	}

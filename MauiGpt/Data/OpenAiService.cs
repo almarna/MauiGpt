@@ -11,6 +11,7 @@ public class OpenAiService
     private readonly string AuthKey;
     private readonly OpenAIClient openAiClient;
     private readonly string languageModel = "gpt3";
+    // ReSharper disable once FieldCanBeMadeReadOnly.Local
     private ChatCompletionsOptions _chatCompletionsOptions = new()
     {
         Messages =
@@ -33,7 +34,7 @@ public class OpenAiService
 
     }
 
-    public async Task<string> Ask(string question, Action<string> callback)
+    public async Task<string> Ask(string question, Func<string, Task> callback)
     {
         try
         {
@@ -52,7 +53,7 @@ public class OpenAiService
                     if ((chatMessage.Content ?? "") != "")
                     {
                         chatResponseBuilder.Append(chatMessage.Content);
-                        callback(chatResponseBuilder.ToString());
+                        await callback(chatResponseBuilder.ToString());
                     }
 
                 }
