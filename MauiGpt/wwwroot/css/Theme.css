@@ -12,4 +12,6 @@
     --chat-question-text: #ffffdd;
     --chat-answer-bg: #555565;
     --chat-answer-text: #ddddee;
+    --chat-error-bg: #ff9999;
+    --chat-error-text: #444444;
 }

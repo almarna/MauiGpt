@@ -34,7 +34,13 @@ public class OpenAiService
 
     }
 
-    public async Task<string> Ask(string question, Func<string, Task> callback)
+    public enum AnswerType
+    {
+        Normal,
+        Error
+    }
+
+    public async Task<(AnswerType,string)> Ask(string question, Func<string, Task> callback)
     {
         try
         {
@@ -55,17 +61,35 @@ public class OpenAiService
                         chatResponseBuilder.Append(chatMessage.Content);
                         await callback(chatResponseBuilder.ToString());
                     }
-
                 }
             }
 
             _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.Assistant, chatResponseBuilder.ToString()));
-            return chatResponseBuilder.ToString();
+            return (AnswerType.Normal, chatResponseBuilder.ToString());
+        }
+        catch (RequestFailedException azureException)
+        {
+            return (AnswerType.Error, HandleAzureExceptions(azureException));
         }
         catch (Exception ex)
         {
-            return ex.Message;
+            return (AnswerType.Error, ex.Message);
         }
+    }
+
+    private static string HandleAzureExceptions(RequestFailedException azureException)
+    {
+        return azureException.ErrorCode switch
+        {
+            "content_filter" => "Question content is inappropriate!",
+            "model_not_found" => "Requested model is not available.",
+            "max_tokens_exceeded" => "Input text exceeds maximum tokens allowed.",
+            "input_too_long" => "Inpu t text exceeds maximum length allowed.",
+            "invalid_request" => "Request format is incorrect.",
+            "authentication_failed" => "Api key is invalid or expired.",
+
+            _ => azureException.Message
+        };
     }
 
     public void ClearHistory()

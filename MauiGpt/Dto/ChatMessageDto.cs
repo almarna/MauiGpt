@@ -2,7 +2,8 @@
 
 public enum ChatMessageType {
    Question,
-   Answer
+   Answer,
+   Error
 }
 
 public class ChatMessageDto

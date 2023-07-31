@@ -3,14 +3,14 @@
 @using Markdig
 @using MauiGpt.Dto
 @using System.Text
-@inject IJSRuntime JS
+@inject IJSRuntime JsRuntime
 @inject OpenAiService OpenAiService
 @inject MarkdownToHtml MD
 
 
 <div class="container">
     <div class="top">
-         <div class="scroll-list" @ref="_scrollList">
+        <div class="scroll-list" @ref="_scrollList">
             @foreach (var line in _lines)
             {
                 switch (line.Type)
@@ -22,6 +22,11 @@
                         break;
                     case ChatMessageType.Question:
                         <div class="gpt-question">
+                            @((MarkupString)line.Message)
+                        </div>
+                        break;
+                    case ChatMessageType.Error:
+                        <div class="gpt-error">
                             @((MarkupString)line.Message)
                         </div>
                         break;
@@ -40,6 +45,7 @@
             <input class="chat-input-field" type="text" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
             <a class="chat-input-send" @onclick="AddText">Send</a>
             <a class="chat-input-clear" @onclick="ClearHistory">Clear</a>
+            <a class="chat-input-clear" @onclick="Lab">Lab</a>
         </div>
     </div>
 </div>
@@ -84,7 +90,7 @@
             else
             {
                 string colored = await ColorCodeblock(block.content);
-                builder.Append($"<pre><code class='hljs'>{colored}</pre></code>");
+                builder.Append($"<pre><code class='hljs'><div>HelloWorld</div>{colored}</pre></code>");
             }
         }
 
@@ -108,6 +114,12 @@
         _lines.Add(new ChatMessageDto { Type = ChatMessageType.Answer, Message = formattedAnswer });
     }
 
+    private void AddError(string answer)
+    {
+        _lines.Add(new ChatMessageDto { Type = ChatMessageType.Error, Message = answer });
+    }
+
+
     private async Task AddText()
     {
         if (string.IsNullOrEmpty(_chatQuestion))
@@ -119,8 +131,16 @@
             var question = CleanQuestion(_chatQuestion);
             AddQuestion(question);
             _chatQuestion = "";
-            var answer = await OpenAiService.Ask(question, CallbackPartMessage);
-            await AddAnswer(answer);
+            var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage);
+
+            if (status == OpenAiService.AnswerType.Error)
+            {
+                AddError(answer);
+            }
+            else
+            {
+                await AddAnswer(answer);
+            }
         }
 
         _partMessage = "";
@@ -128,13 +148,13 @@
 
     private async Task<string> ColorCodeblock(string uncolored)
     {
-        return await JS.InvokeAsync<string>("colorCodeblock", uncolored);
+        return await JsRuntime.InvokeAsync<string>("colorCodeblock", uncolored);
 
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JS.InvokeVoidAsync("scrollListToEnd",_scrollList);
+        await JsRuntime.InvokeVoidAsync("scrollListToEnd", _scrollList);
     }
 
     private string CleanQuestion(string input)
@@ -144,5 +164,16 @@
             .Replace(">", "]");
 
         return result;
+    }
+
+    private async Task Lab()
+    {
+        var st = await CopySelectedText();
+    }
+
+    private async Task<string> CopySelectedText()
+    {
+        string selectedText = await JsRuntime.InvokeAsync<string>("getSelectionText");
+        return selectedText;
     }
 }
