@@ -1,5 +1,10 @@
-﻿function scrollToEnd(element) {
-    element.scrollTop = element.scrollHeight;
+﻿var lastScrollHeight = -1;
+
+scrollListToEnd = (element) => {
+    if (element.scrollHeight !== lastScrollHeight) {
+        lastScrollHeight = element.scrollHeight;
+        element.scrollTop = element.scrollHeight;
+    }
 }
 
 colorCodeblock = (htmlContent) => {

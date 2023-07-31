@@ -14,7 +14,6 @@
     background: var(--chat-bg);
     height: 100%;
     overflow: auto;
-
 }
 
 .scroll-list {
@@ -106,28 +105,3 @@ p {
     cursor: pointer;
     width: 8%
 }
-
-/*input,
-textarea {
-  background: none;
-  color: $muted-color;
-  font-size: 18px;
-  padding: 10px 10px 10px 5px;
-  display: block;
-  width: $width;
-  border: none;
-  border-radius: 0;
-  border-bottom: 1px solid $muted-color;
-  &:focus {
-    outline: none;
-  }
-  &:focus ~ label,
-  &:valid ~ label {
-    top: -14px;
-    font-size: 12px;
-    color: $hl-color;
-  }
-  &:focus ~ .bar:before {
-    width: $width;
-  }
-}*/

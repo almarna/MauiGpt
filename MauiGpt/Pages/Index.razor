@@ -1,8 +1,6 @@
 ﻿@page "/"
-@using Microsoft.JSInterop
 @using MauiGpt.Data
 @using Markdig
-@using Markdown.ColorCode
 @using MauiGpt.Dto
 @using System.Text
 @inject IJSRuntime JS
@@ -55,32 +53,6 @@
 
     private string _partMessage;
 
-    protected override async Task OnInitializedAsync()
-    {
-//       var trans = await ColorCodeblock(@"
-//for (int i = 0; i < n; i++)
-//{
-//    if (i == 0)
-//    {
-//        Console.Write(""{ 0}
-//        "", a);
-//    }
-//    else if (i == 1)
-//    {
-//        Console.Write(""{0} "", b);
-//    }
-//    else
-//    {
-//        c = a + b;
-//        a = b;
-//        b = c;
-//        Console.Write(""{0} "", c);
-//    }
-//}
-//");
-//        _partMessage = $"<pre><code>{trans}</code></pre>";
-    }
-
     private async Task QuestionKeyUp(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
@@ -92,8 +64,6 @@
 
     private async Task CallbackPartMessage(string part)
     {
-        //_partMessage = Markdown.ToHtml(part);
-        //_partMessage = await MD.Convert(part);
         _partMessage = await ConvertMarkdownToHtml(part);
         StateHasChanged();
     }
@@ -125,7 +95,6 @@
     {
         OpenAiService.ClearHistory();
         AddQuestion("History Cleared!");
-//        _lines.Add(FormatQuestion("History Cleared!"));
     }
 
     private void AddQuestion(string question)
@@ -135,8 +104,6 @@
 
     private async Task AddAnswer(string answer)
     {
-        //var formattedAnswer = Markdown.ToHtml(answer);
-        // var formattedAnswer = await MD.Convert(answer);
         var formattedAnswer = await ConvertMarkdownToHtml(answer);
         _lines.Add(new ChatMessageDto { Type = ChatMessageType.Answer, Message = formattedAnswer });
     }
@@ -167,8 +134,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        //await JS.InvokeVoidAsync("colorAllCode");
-        //await JS.InvokeVoidAsync("scrollToEnd",_scrollList);
+        await JS.InvokeVoidAsync("scrollListToEnd",_scrollList);
     }
 
     private string CleanQuestion(string input)
