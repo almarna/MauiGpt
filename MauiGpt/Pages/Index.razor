@@ -3,9 +3,11 @@
 @using Markdig
 @using MauiGpt.Dto
 @using System.Text
+@using MauiGpt.Svg
+
 @inject IJSRuntime JsRuntime
 @inject OpenAiService OpenAiService
-@inject MarkdownToHtml MD
+@inject MarkdownToHtml MarkdownToHtml
 
 
 <div class="container">
@@ -13,39 +15,43 @@
         <div class="scroll-list" @ref="_scrollList">
             @foreach (var line in _lines)
             {
-                switch (line.Type)
-                {
-                    case ChatMessageType.Answer:
-                        <div class="gpt-answer">
-                            @((MarkupString)line.Message)
-                        </div>
-                        break;
-                    case ChatMessageType.Question:
-                        <div class="gpt-question">
-                            @((MarkupString)line.Message)
-                        </div>
-                        break;
-                    case ChatMessageType.Error:
-                        <div class="gpt-error">
-                            @((MarkupString)line.Message)
-                        </div>
-                        break;
-                }
-            }
-            @if (string.IsNullOrWhiteSpace(_partMessage) == false)
-            {
-                <div class="gpt-answer">
-                    @((MarkupString)@_partMessage)
+                var messageClass = MessageClasses[line.Type];
+
+                <div class="@messageClass">
+                    @foreach (var block in line.HtmlBlocks)
+                    {
+                        if (block.Type == BlockType.Code)
+                        {
+                            Guid guid = Guid.NewGuid();
+                            <pre>
+                                <code class='hljs'>
+                                    <div class="chat-code-heading">
+                                        <a onclick="copyToClipboard('@guid')" title="Copy code">
+                                            <CopyIcon />
+                                        </a>
+                                    </div>
+                                    <span id="@guid">
+                                        @((MarkupString)block.Html)
+                                    </span>
+                                </code>
+                            </pre>
+                        }
+                        else
+                        {
+                            @((MarkupString)block.Html)
+                        }
+                    }
                 </div>
             }
         </div>
     </div>
+    
     <div class="bottom">
         <div class="chat-input-container">
             <input class="chat-input-field" type="text" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
-            <a class="chat-input-send" @onclick="AddText">Send</a>
-            <a class="chat-input-clear" @onclick="ClearHistory">Clear</a>
-            <a class="chat-input-clear" @onclick="Lab">Lab</a>
+            <a @onclick="AddText" title="Send" class="chat-input-icon"><SendIcon /></a>
+            <a @onclick="ClearHistory" title="Clear history" class="chat-input-icon"><SkipBackIcon /></a>
+            <a @onclick="ClearConversation" title="Clear conversation" class="chat-input-icon"><TrashIcon /></a>
         </div>
     </div>
 </div>
@@ -54,10 +60,16 @@
 @code {
     private string _chatQuestion;
 
-    private readonly IList<ChatMessageDto> _lines = new List<ChatMessageDto>();
+    private IList<ChatMessageDto> _lines = new List<ChatMessageDto>();
+
     private ElementReference _scrollList;
 
-    private string _partMessage;
+    private static readonly Dictionary<ChatMessageType, string> MessageClasses = new()
+    {
+        { ChatMessageType.Question, "gpt-question" },
+        { ChatMessageType.Answer, "gpt-answer" },
+        { ChatMessageType.Error, "gpt-error" }
+    };
 
     private async Task QuestionKeyUp(KeyboardEventArgs e)
     {
@@ -70,13 +82,27 @@
 
     private async Task CallbackPartMessage(string part)
     {
-        _partMessage = await ConvertMarkdownToHtml(part);
+        IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(part, ConvertCode);
+        var temporaryLine = _lines.LastOrDefault();
+        if (temporaryLine?.IsTemporary ?? false)
+        {
+            temporaryLine.HtmlBlocks = htmlBlocks;
+        }
+        else
+        {
+            temporaryLine = ChatMessageDto.GetAnswer(htmlBlocks);
+            temporaryLine.IsTemporary = true;
+            _lines.Add(temporaryLine);
+        }
+
         StateHasChanged();
     }
 
     private async Task<string> ConvertMarkdownToHtml(string markdown)
     {
-        var blocks = MD.GetBlocks(markdown);
+        // Returnera htmlblocks gör extra loop i html output
+        IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(markdown, ConvertCode);
+        var blocks = MarkdownToHtml.GetBlocks(markdown);
 
         StringBuilder builder = new StringBuilder();
 
@@ -94,7 +120,12 @@
             }
         }
 
-       return builder.ToString();
+        return builder.ToString();
+    }
+
+    private async Task<string> ConvertCode(string language, string codeData)
+    {
+        return await JsRuntime.InvokeAsync<string>("colorCodeblock", codeData);
     }
 
     private void ClearHistory()
@@ -103,20 +134,27 @@
         AddQuestion("History Cleared!");
     }
 
+    private void ClearConversation()
+    {
+        OpenAiService.ClearHistory();
+        _lines = new List<ChatMessageDto>();
+    }
+
     private void AddQuestion(string question)
     {
-        _lines.Add(new ChatMessageDto { Type=ChatMessageType.Question, Message=question});
+        _lines.Add(ChatMessageDto.GetQuestion(question));
     }
 
     private async Task AddAnswer(string answer)
     {
-        var formattedAnswer = await ConvertMarkdownToHtml(answer);
-        _lines.Add(new ChatMessageDto { Type = ChatMessageType.Answer, Message = formattedAnswer });
+        _lines = _lines.Where(item => item.IsTemporary == false).ToList();
+        IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(answer, ConvertCode);
+        _lines.Add(ChatMessageDto.GetAnswer(htmlBlocks));
     }
 
-    private void AddError(string answer)
+    private void AddError(string error)
     {
-        _lines.Add(new ChatMessageDto { Type = ChatMessageType.Error, Message = answer });
+        _lines.Add(ChatMessageDto.GetError(error));
     }
 
 
@@ -133,7 +171,7 @@
             _chatQuestion = "";
             var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage);
 
-            if (status == OpenAiService.AnswerType.Error)
+            if (status == AiAnswerType.Error)
             {
                 AddError(answer);
             }
@@ -142,8 +180,6 @@
                 await AddAnswer(answer);
             }
         }
-
-        _partMessage = "";
     }
 
     private async Task<string> ColorCodeblock(string uncolored)
@@ -164,16 +200,5 @@
             .Replace(">", "]");
 
         return result;
-    }
-
-    private async Task Lab()
-    {
-        var st = await CopySelectedText();
-    }
-
-    private async Task<string> CopySelectedText()
-    {
-        string selectedText = await JsRuntime.InvokeAsync<string>("getSelectionText");
-        return selectedText;
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Azure;
 using Azure.AI.OpenAI;
+using MauiGpt.Dto;
 
 namespace MauiGpt.Data;
 
@@ -34,13 +35,7 @@ public class OpenAiService
 
     }
 
-    public enum AnswerType
-    {
-        Normal,
-        Error
-    }
-
-    public async Task<(AnswerType,string)> Ask(string question, Func<string, Task> callback)
+    public async Task<(AiAnswerType,string)> Ask(string question, Func<string, Task> callback)
     {
         try
         {
@@ -65,15 +60,15 @@ public class OpenAiService
             }
 
             _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.Assistant, chatResponseBuilder.ToString()));
-            return (AnswerType.Normal, chatResponseBuilder.ToString());
+            return (AiAnswerType.Normal, chatResponseBuilder.ToString());
         }
         catch (RequestFailedException azureException)
         {
-            return (AnswerType.Error, HandleAzureExceptions(azureException));
+            return (AiAnswerType.Error, HandleAzureExceptions(azureException));
         }
         catch (Exception ex)
         {
-            return (AnswerType.Error, ex.Message);
+            return (AiAnswerType.Error, ex.Message);
         }
     }
 

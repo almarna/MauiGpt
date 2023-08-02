@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
+using Markdig;
+using MauiGpt.Dto;
 
 namespace MauiGpt.Data;
 
@@ -8,7 +10,30 @@ public class MarkdownToHtml
 {
     private static readonly Regex _mdCodeRegex = new Regex(@"```(\w+)?");
     public const string MdText = "md";
-    private const string CodeText = "code";
+    public const string CodeText = "code";
+
+    public async Task<IList<HtmlBlock>> Convert(string indata, Func<string, string, Task<string>> convertCode)
+    {
+        var blocks = GetBlocks(indata);
+
+        var result = new List<HtmlBlock>();
+
+        foreach (var (type, content) in blocks)
+        {
+            if (type == MarkdownToHtml.MdText)
+            {
+                var html = Markdown.ToHtml(content);
+                result.Add(new HtmlBlock { Type = BlockType.Plain, Html = html });
+            }
+            else
+            {
+                string colored = await convertCode(type == CodeText ? "" : type, content);
+                result.Add(new HtmlBlock { Type = BlockType.Code, Html = colored });
+            }
+        }
+
+        return result;
+    }
 
 
     public List<(string type, string content)> GetBlocks(string indata)

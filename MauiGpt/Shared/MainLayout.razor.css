@@ -4,11 +4,12 @@
 }
 
 .left {
-    width: 5em;
+    width: 3em;
     background: var(--menu-bg);
     display: flex;
     flex-direction: column;
     padding: 1em;
+    padding-top: 3em;
 }
 
 .right {
@@ -25,7 +26,7 @@
     background: var(--main-bg);
     font-size: larger;
     text-align: center;
-    padding-top: 0.5em;
+    padding: 0.2em;
 }
 
 .body {

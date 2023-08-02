@@ -15,16 +15,13 @@ colorAllCode = () => {
     hljs.highlightAll();
 };
 
-getSelectionText = () => {
-    var text = "";
-    if (window.getSelection) {
-        text = window.getSelection().toString();
-        console.log("1:", text);
-    } else if (document.selection && document.selection.type != "Control") {
-        text = document.selection.createRange().text;
-        console.log("2:", text);
-    }
-    return text;
+function copyToClipboard(id) {
+    var r = document.createRange();
+    r.selectNode(document.getElementById(id));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
 }
 
 var contextMenu = CtxMenu();

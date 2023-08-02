@@ -82,7 +82,7 @@ p {
 .chat-input-field {
     background: none;
     border: none;
-    width: 80%;
+    width: 90%;
     font-size: 120%;
     color: var(--input-text);
 }
@@ -90,6 +90,14 @@ p {
 .chat-input-field:focus {
         outline: none;
     }
+
+.chat-input-icon {
+    width: 1.5em;
+    height: 1.5em;
+    color: var(--input-icon);
+    stroke: var(--input-icon);
+    cursor: pointer;
+}
 
 .chat-input-send {
     display: inline-block;
@@ -115,4 +123,19 @@ p {
     text-align: center;
     cursor: pointer;
     width: 8%
+}
+
+.chat-code-heading {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    margin: -0.8em;
+}
+
+.chat-code-heading a {
+    color: var(--code-icon);
+    stroke: var(--code-icon);
+    width: 1.4em;
+    height: 1.4em;
+    cursor: pointer;
 }

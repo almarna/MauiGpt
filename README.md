@@ -1,6 +1,7 @@
 ### TODO
 
-* Kopiera-knapp på varje kodblock
+* Möjlighet att avbryta fråga
+* Skicka in language om det finns till script som färgar kodblock
 * Lagra connection-inställningar hemligt (Keyvault?)
 * Fixa settings-sida
 * Hantera när historik har för många token
@@ -9,7 +10,6 @@
 * Kunna välja preprompt
 * Spara undan historik
 * Söka i historik
-* Möjlighet att avbryta fråga
 
 ### Fixat 
 * Fixa så att enter-knappen fungerar
@@ -21,3 +21,4 @@
 * Rensa all startup-skräp
 * Högerklick-meny för att kopiera text
 * Hantera när "bad language"-filter slår till ex: "what books by philip k dick has been filmed" ("Philip K. Dick" verkar fungera)
+* Kopiera-knapp på varje kodblock

@@ -4,19 +4,24 @@
     font-family: Arial, sans-serif;
 }
 
+#app {
+    height: 100%;
+}
+
 .nav-link {
     text-decoration: none;
     margin-bottom: 0.2em;
     color: var(--menu-text);
+    fill: var(--menu-text);
 }
 
-.active {
+.nav-link.active {
     color: var(--menu-active);
+    fill: var(--menu-active);
 }
 
-#app {
-    height: 100%;
-    color: gray;
+.nav-link svg {
+    width: 3em;
 }
 
 .valid.modified:not([type=checkbox]) {
