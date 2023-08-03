@@ -1,8 +1,10 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using Microsoft.Extensions.Configuration;
 using Azure;
 using Azure.AI.OpenAI;
 using MauiGpt.Dto;
+using System.Threading;
 
 namespace MauiGpt.Data;
 
@@ -12,6 +14,7 @@ public class OpenAiService
     private readonly string AuthKey;
     private readonly OpenAIClient openAiClient;
     private readonly string languageModel = "gpt3";
+
     // ReSharper disable once FieldCanBeMadeReadOnly.Local
     private ChatCompletionsOptions _chatCompletionsOptions = new()
     {
@@ -35,7 +38,7 @@ public class OpenAiService
 
     }
 
-    public async Task<(AiAnswerType,string)> Ask(string question, Func<string, Task> callback)
+    public async Task<(AiAnswerType,string)> Ask(string question, Func<string, Task> callback, CancellationToken cancellationToken)
     {
         try
         {
@@ -43,14 +46,21 @@ public class OpenAiService
 
             var chatCompletionsResponse = await openAiClient.GetChatCompletionsStreamingAsync(
                 languageModel,
-                _chatCompletionsOptions
+                _chatCompletionsOptions,
+                cancellationToken
             );
 
             var chatResponseBuilder = new StringBuilder();
-            await foreach (var chatChoice in chatCompletionsResponse.Value.GetChoicesStreaming())
+
+            var chatChoices = chatCompletionsResponse.Value.GetChoicesStreaming();
+
+            await foreach (var chatChoice in chatChoices)
             {
-                await foreach (var chatMessage in chatChoice.GetMessageStreaming())
+                var chatMessages = chatChoice.GetMessageStreaming();
+                await foreach (var chatMessage in chatMessages)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if ((chatMessage.Content ?? "") != "")
                     {
                         chatResponseBuilder.Append(chatMessage.Content);
@@ -71,6 +81,14 @@ public class OpenAiService
             return (AiAnswerType.Error, ex.Message);
         }
     }
+
+    private static async Task LabDelay(Func<string, Task> callback, CancellationToken cancellationToken, int i, int seconds)
+    {
+        await callback($"Delaying {i} ({seconds}s");
+
+        await Task.Delay(1000*seconds, cancellationToken);
+        await callback("Delay ready");
+  }
 
     private static string HandleAzureExceptions(RequestFailedException azureException)
     {

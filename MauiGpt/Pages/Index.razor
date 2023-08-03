@@ -47,19 +47,29 @@
     </div>
     
     <div class="bottom">
-        <div class="chat-input-container">
-            <input class="chat-input-field" type="text" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
-            <a @onclick="AddText" title="Send" class="chat-input-icon"><SendIcon /></a>
-            <a @onclick="ClearHistory" title="Clear history" class="chat-input-icon"><SkipBackIcon /></a>
-            <a @onclick="ClearConversation" title="Clear conversation" class="chat-input-icon"><TrashIcon /></a>
-        </div>
+        @if (_answerInProgress)
+        {
+            <div class="chat-cancel-container">
+                <a @onclick="CancelAnswer" title="Cancel answer" class="chat-cancel">Cancel!</a>
+            </div>
+        }
+        else
+        {
+            <div class="chat-input-container">
+                <input class="chat-input-field" type="text" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
+                <a @onclick="AddText" title="Send" class="chat-input-icon"><SendIcon/></a>
+                <a @onclick="ClearHistory" title="Clear history" class="chat-input-icon"><SkipBackIcon/></a>
+                <a @onclick="ClearConversation" title="Clear conversation" class="chat-input-icon"><TrashIcon/></a>
+            </div>
+        }
     </div>
 </div>
 
 
 @code {
     private string _chatQuestion;
-
+    private bool _answerInProgress = false;
+    private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
     private IList<ChatMessageDto> _lines = new List<ChatMessageDto>();
 
     private ElementReference _scrollList;
@@ -82,7 +92,7 @@
 
     private async Task CallbackPartMessage(string part)
     {
-        IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(part, ConvertCode);
+        IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(part, ColorCodeblock);
         var temporaryLine = _lines.LastOrDefault();
         if (temporaryLine?.IsTemporary ?? false)
         {
@@ -96,36 +106,6 @@
         }
 
         StateHasChanged();
-    }
-
-    private async Task<string> ConvertMarkdownToHtml(string markdown)
-    {
-        // Returnera htmlblocks gör extra loop i html output
-        IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(markdown, ConvertCode);
-        var blocks = MarkdownToHtml.GetBlocks(markdown);
-
-        StringBuilder builder = new StringBuilder();
-
-        foreach (var block in blocks)
-        {
-            if (block.type == MarkdownToHtml.MdText)
-            {
-                var html = Markdown.ToHtml(block.content);
-                builder.Append(html);
-            }
-            else
-            {
-                string colored = await ColorCodeblock(block.content);
-                builder.Append($"<pre><code class='hljs'><div>HelloWorld</div>{colored}</pre></code>");
-            }
-        }
-
-        return builder.ToString();
-    }
-
-    private async Task<string> ConvertCode(string language, string codeData)
-    {
-        return await JsRuntime.InvokeAsync<string>("colorCodeblock", codeData);
     }
 
     private void ClearHistory()
@@ -148,7 +128,7 @@
     private async Task AddAnswer(string answer)
     {
         _lines = _lines.Where(item => item.IsTemporary == false).ToList();
-        IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(answer, ConvertCode);
+        IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(answer, ColorCodeblock);
         _lines.Add(ChatMessageDto.GetAnswer(htmlBlocks));
     }
 
@@ -157,35 +137,49 @@
         _lines.Add(ChatMessageDto.GetError(error));
     }
 
+    private void CancelAnswer()
+    {
+        _cancellationTokenSource.Cancel();
+        _answerInProgress = false;
+    }
 
     private async Task AddText()
     {
-        if (string.IsNullOrEmpty(_chatQuestion))
+        _answerInProgress = true;
+        try
         {
-            AddQuestion("Empty input");
-        }
-        else
-        {
-            var question = CleanQuestion(_chatQuestion);
-            AddQuestion(question);
-            _chatQuestion = "";
-            var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage);
-
-            if (status == AiAnswerType.Error)
+            if (string.IsNullOrEmpty(_chatQuestion))
             {
-                AddError(answer);
+                AddQuestion("Empty input");
             }
             else
             {
-                await AddAnswer(answer);
+                var question = CleanQuestion(_chatQuestion);
+                AddQuestion(question);
+                _chatQuestion = "";
+                var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, _cancellationTokenSource.Token);
+                //var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, new CancellationToken());
+
+                if (status == AiAnswerType.Error)
+                {
+                    AddError(answer);
+                }
+                else
+                {
+                    await AddAnswer(answer);
+                }
             }
+        }
+        finally
+        {
+            _answerInProgress = false;
+            _cancellationTokenSource = new CancellationTokenSource();
         }
     }
 
-    private async Task<string> ColorCodeblock(string uncolored)
+    private async Task<string> ColorCodeblock(string language, string codeData)
     {
-        return await JsRuntime.InvokeAsync<string>("colorCodeblock", uncolored);
-
+        return await JsRuntime.InvokeAsync<string>("colorCodeblock", codeData);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

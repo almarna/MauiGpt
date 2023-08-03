@@ -99,31 +99,31 @@ p {
     cursor: pointer;
 }
 
-.chat-input-send {
-    display: inline-block;
-    padding: 0.5em;
-    background-color: #007bff; /* set the background color */
-    color: white; /* set the font color */
-    border: none; /* remove the default border */
-    border-radius: 5px; /* round the edges */
-    text-decoration: none; /* remove the underline */
-    text-align: center;
-    cursor: pointer;
-    width: 8%;
+.chat-cancel-container {
+    background: var(--input-field-cancel-bg);
+    margin: 0.5em;
+    border-radius: 0.5em;
+    padding: 0.3em;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    padding-left: 0.8em;
+    padding-right: 1em;
 }
 
-.chat-input-clear {
+.chat-cancel {
     display: inline-block;
     padding: 0.5em;
-    background-color: #aa1111; /* set the background color */
-    color: white; /* set the font color */
-    border: none; /* remove the default border */
-    border-radius: 5px; /* round the edges */
-    text-decoration: none; /* remove the underline */
+    background: var(--cancel-button);
+    color: var(--cancel-text);
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
     text-align: center;
     cursor: pointer;
     width: 8%
 }
+
 
 .chat-code-heading {
     display: flex;

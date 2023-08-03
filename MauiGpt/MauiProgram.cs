@@ -22,7 +22,6 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
-		builder.Services.AddSingleton<WeatherForecastService>();
         builder.Services.AddSingleton<OpenAiService>();
         builder.Services.AddSingleton<MarkdownToHtml>();
 
