@@ -7,6 +7,8 @@
 .bottom {
     height: 3.5em;
     background: var(--input-bg);
+    position: relative;
+    padding: 0.5em;
 }
 
 .top {
@@ -69,7 +71,6 @@ p {
 
 .chat-input-container {
     background: var(--input-field);
-    margin: 0.5em;
     border-radius: 0.5em;
     padding: 0.3em;
     display: flex;
@@ -109,9 +110,14 @@ p {
     flex-direction: row;
     padding-left: 0.8em;
     padding-right: 1em;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
 }
 
 .chat-cancel {
+    font-size: 0.8em;
     display: inline-block;
     padding: 0.5em;
     background: var(--cancel-button);

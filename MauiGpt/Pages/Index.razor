@@ -47,19 +47,16 @@
     </div>
     
     <div class="bottom">
+        <div class="chat-input-container">
+            <input class="chat-input-field" type="text" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
+            <a @onclick="AddText" title="Send" class="chat-input-icon"><SendIcon/></a>
+            <a @onclick="ClearHistory" title="Clear history" class="chat-input-icon"><SkipBackIcon/></a>
+            <a @onclick="ClearConversation" title="Clear conversation" class="chat-input-icon"><TrashIcon/></a>
+        </div>
         @if (_answerInProgress)
         {
             <div class="chat-cancel-container">
                 <a @onclick="CancelAnswer" title="Cancel answer" class="chat-cancel">Cancel!</a>
-            </div>
-        }
-        else
-        {
-            <div class="chat-input-container">
-                <input class="chat-input-field" type="text" @bind="_chatQuestion" @onkeyup="QuestionKeyUp">
-                <a @onclick="AddText" title="Send" class="chat-input-icon"><SendIcon/></a>
-                <a @onclick="ClearHistory" title="Clear history" class="chat-input-icon"><SkipBackIcon/></a>
-                <a @onclick="ClearConversation" title="Clear conversation" class="chat-input-icon"><TrashIcon/></a>
             </div>
         }
     </div>

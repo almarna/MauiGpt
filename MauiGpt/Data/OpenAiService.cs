@@ -10,10 +10,8 @@ namespace MauiGpt.Data;
 
 public class OpenAiService
 {
-    private readonly string Endpoint;
-    private readonly string AuthKey;
-    private readonly OpenAIClient openAiClient;
-    private readonly string languageModel = "gpt3";
+    private readonly OpenAIClient _openAiClient;
+    private readonly string _languageModel;
 
     // ReSharper disable once FieldCanBeMadeReadOnly.Local
     private ChatCompletionsOptions _chatCompletionsOptions = new()
@@ -28,12 +26,13 @@ public class OpenAiService
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
             .Build();
-        Endpoint = config.GetValue<string>("Endpoint");
-        AuthKey = config.GetValue<string>("AuthKey");
+        string endpoint = config.GetValue<string>("Endpoint");
+        string authKey = config.GetValue<string>("AuthKey");
+        _languageModel = config.GetValue<string>("Model");
 
-        openAiClient = new OpenAIClient(
-            new Uri(Endpoint),
-            new AzureKeyCredential(AuthKey)
+        _openAiClient = new OpenAIClient(
+            new Uri(endpoint),
+            new AzureKeyCredential(authKey)
         );
 
     }
@@ -44,8 +43,8 @@ public class OpenAiService
         {
             _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, question));
 
-            var chatCompletionsResponse = await openAiClient.GetChatCompletionsStreamingAsync(
-                languageModel,
+            var chatCompletionsResponse = await _openAiClient.GetChatCompletionsStreamingAsync(
+                _languageModel,
                 _chatCompletionsOptions,
                 cancellationToken
             );
