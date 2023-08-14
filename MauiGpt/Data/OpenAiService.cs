@@ -1,50 +1,65 @@
-﻿using System.Diagnostics;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Azure;
 using Azure.AI.OpenAI;
 using MauiGpt.Dto;
-using System.Threading;
 
 namespace MauiGpt.Data;
 
 public class OpenAiService
 {
-    private readonly OpenAIClient _openAiClient;
-    private readonly string _languageModel;
+    private readonly SettingsService _settingsService;
+    private OpenAIClient _openAiClient;
+    private ModelsDto _currentModel;
 
-    // ReSharper disable once FieldCanBeMadeReadOnly.Local
-    private ChatCompletionsOptions _chatCompletionsOptions = new()
+    private readonly ChatCompletionsOptions _chatCompletionsOptions = new()
     {
         Messages =
         {
         }
     };
 
-    public OpenAiService()
+    public OpenAiService(SettingsService settingsService)
     {
-        var config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-            .Build();
-        string endpoint = config.GetValue<string>("Endpoint");
-        string authKey = config.GetValue<string>("AuthKey");
-        _languageModel = config.GetValue<string>("Model");
+        _settingsService = settingsService;
+        SetModelIfChanged();
+     }
 
-        _openAiClient = new OpenAIClient(
-            new Uri(endpoint),
-            new AzureKeyCredential(authKey)
-        );
+    private void SetModelIfChanged()
+    {
+        var modelsDto = _settingsService.GetCurrent();
 
+        if ((_currentModel?.IsEquivalent(modelsDto) ?? false) == false)
+        {
+            _currentModel = modelsDto;
+            ClearHistory();
+
+            if (_currentModel == null)
+            {
+                _openAiClient = null;
+            }
+            else
+            {
+                _openAiClient = new OpenAIClient(
+                    new Uri(_currentModel.Endpoint),
+                    new AzureKeyCredential(_currentModel.AuthKey));
+            }
+
+        }
     }
 
+    [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
+    [SuppressMessage("ReSharper", "UseCancellationTokenForIAsyncEnumerable")]
     public async Task<(AiAnswerType,string)> Ask(string question, Func<string, Task> callback, CancellationToken cancellationToken)
     {
+        SetModelIfChanged();
         try
         {
             _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, question));
 
             var chatCompletionsResponse = await _openAiClient.GetChatCompletionsStreamingAsync(
-                _languageModel,
+                _currentModel.Model,
                 _chatCompletionsOptions,
                 cancellationToken
             );

@@ -1,6 +1,99 @@
 ﻿@page "/settings"
-<h3>Settings</h3>
+@using MauiGpt.Dto
+@using System.Text
+@using MauiGpt.Data
+
+@inject SettingsService SettingsService
+
+<div class="container">
+    <h3>Settings</h3>
+    
+    <label for="settings-model">Choose model to edit</label>
+    <div class="select-container">
+        <select id="settings-model" @onchange="ModelChanged">
+            @foreach (var model in _models)
+            {
+                if (model.Id == _currentModel.Id)
+                {
+                    <option value="@model.Id" selected>@model.Name</option>
+                }
+                else
+                {
+                    <option value="@model.Id">@model.Name</option>
+                }
+            }
+            @if (_currentModel.Id < 0)
+            {
+                <option selected value="_currentModel.Id">New model</option>
+            }
+        </select>
+        <a @onclick="() => _currentModel = NewModel()" class="plus" title="New">+</a>
+    </div>
+    <label for="name">Name</label>
+    <input type="text" id="name" @bind="_currentModel.Name" />
+    <label for="endpoint">Endpoint</label>
+    <input type="text" id="endpoint" @bind="_currentModel.Endpoint" />
+    <label for="authkey">Authentication key</label>
+    <input type="password" id="authkey" @bind="_currentModel.AuthKey" />
+    <label for="model">Model</label>
+    <input type="text" id="model" @bind="_currentModel.Model" />
+    <div class="button-container">
+        <a @onclick="Save" class="ok-button" title="Save" >Save</a>
+        <a @onclick="() => _showDeleteDialog = true" class="delete-button" title="Delete" >Delete</a>
+    </div>
+</div>
+@if (_showDeleteDialog)
+{
+    <div class="lightbox">
+        <!-- Alert box -->
+        <div class="alert-box">
+            <h2>Delete "@_currentModel.Name"</h2>
+            <p>Are you sure?</p>
+            <div>
+                <button class="ok-btn"  @onclick="Delete">OK</button>
+                <button class="cancel-btn" @onclick="() => _showDeleteDialog = false">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
+    private IList<ModelsDto> _models = new List<ModelsDto>();
+    private ModelsDto _currentModel = NewModel();
+    private bool _showDeleteDialog = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        LoadModels();
+    }
+
+    private void LoadModels()
+    {
+        _models = SettingsService.GetAll().ToList();
+        _currentModel = SettingsService.GetCurrent() ?? NewModel();
+    }
+
+    private void ModelChanged(ChangeEventArgs e)
+    {
+        var modelId = int.Parse(e.Value?.ToString() ?? "-1");
+        _currentModel = _models.SingleOrDefault(model => model.Id == modelId) ?? NewModel();
+    }
+
+    private static ModelsDto NewModel()
+    {
+        return new ModelsDto { Name = "", AuthKey = "", Endpoint = "", Model = "", Id = -1 };
+    }
+
+    private void Save()
+    {
+        int id = SettingsService.SaveModel(_currentModel);
+        _models = SettingsService.GetAll().ToList();
+        _currentModel = _models.SingleOrDefault(model => model.Id == id) ?? _models.FirstOrDefault() ?? NewModel();
+    }
+
+    private void Delete()
+    {
+        SettingsService.DeleteModel(_currentModel.Id);
+        LoadModels();
+    }
 }

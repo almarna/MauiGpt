@@ -2,13 +2,13 @@
 
 * Skicka in language om det finns till script som färgar kodblock
 * Lagra connection-inställningar hemligt (Keyvault?)
-* Fixa settings-sida
 * Hantera när historik har för många token
 * Se om man kan utvärdera hur många tokens som används
 * Möjlighet att välja annan model-deployment
 * Kunna välja preprompt
 * Spara undan historik
 * Söka i historik
+* När man går till settings ska chat finnas kvar
 
 ### Fixat 
 * Fixa så att enter-knappen fungerar
@@ -22,3 +22,5 @@
 * Hantera när "bad language"-filter slår till ex: "what books by philip k dick has been filmed" ("Philip K. Dick" verkar fungera)
 * Kopiera-knapp på varje kodblock
 * Möjlighet att avbryta fråga
+* Se till att returnera kopior när settings hämtas
+* Fixa settings-sida

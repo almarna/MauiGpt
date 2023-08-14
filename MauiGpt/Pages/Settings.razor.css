@@ -1,0 +1,136 @@
+label {
+    display: block;
+    margin-bottom: 0.1em;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"] {
+    font-size: 1.3em;
+    padding: 0.3em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 0.5em;
+}
+
+.select-container {
+    display: flex;
+    margin-bottom: 2em;
+}
+
+select {
+    flex: 1;
+    font-size: 1.3em;
+    padding: 0.3em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 0.1em;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 6em);
+    background: var(--chat-bg);
+    padding: 1em;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.ok-button {
+    font-size: 1.3em;
+    display: inline-block;
+    padding: 0.5em;
+    background: #55ff55;
+    color: var(--cancel-text);
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    width: 8%
+}
+
+.delete-button {
+    font-size: 1.3em;
+    display: inline-block;
+    padding: 0.5em;
+    background: #AA4444;
+    color: var(--cancel-text);
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    width: 8%
+}
+
+.plus {
+    margin-left: 0.5em;
+    width: 1.5em;
+    font-size: 2em;
+    display: inline-block;
+    background: #55ff55;
+    color: var(--cancel-text);
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Styling for the lightbox */
+.lightbox {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+}
+
+/* Styling for the alert box */
+.alert-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    width: 50%;
+    max-width: 500px;
+    height: 200px;
+    max-height: 80%;
+    z-index: 10000;
+}
+
+/* Styling for the buttons */
+.alert-box button {
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: 5px;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    text-transform: uppercase;
+    cursor: pointer;
+    outline: none;
+}
+
+.ok-btn {
+    background-color: green;
+}
+
+.cancel-btn {
+    background-color: red;
+}

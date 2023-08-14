@@ -22,6 +22,7 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
+        builder.Services.AddSingleton<SettingsService>();
         builder.Services.AddSingleton<OpenAiService>();
         builder.Services.AddSingleton<MarkdownToHtml>();
 

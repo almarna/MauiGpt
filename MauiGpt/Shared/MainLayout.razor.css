@@ -21,14 +21,15 @@
 }
 
 .header {
-    height: 2em;
+    height: 1.8em;
     color: var(--main-text);
     background: var(--main-bg);
-    font-size: larger;
-    text-align: center;
     padding: 0.2em;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
-.body {
+.main-area {
     flex-grow: 1;
 }

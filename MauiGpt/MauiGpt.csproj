@@ -60,10 +60,15 @@
 
     <ItemGroup>
       <None Remove="appsettings.json-sample" />
+      <None Remove="Components\SelectModel.razor.css" />
     </ItemGroup>
 
     <ItemGroup>
       <Content Include="appsettings.json-sample" />
+      <Content Include="Components\SelectModel.razor.css">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>

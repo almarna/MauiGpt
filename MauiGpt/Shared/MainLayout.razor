@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @using MauiGpt.Svg
+@using MauiGpt.Components
 
 <div class="container">
     <div class="left">
@@ -11,7 +12,11 @@
         </NavLink>
     </div>
     <div class ="right">
-        <div class="header">Maui GPT</div>
-        <div class="body">@Body</div>
+        <div class="header">
+            <div style="flex:1"></div>
+            <p style="flex: 1; margin: 0;">Maui GPT</p>
+            <SelectModel/>
+        </div>
+        <div class="main-area">@Body</div>
     </div>
 </div>
