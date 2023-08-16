@@ -1,12 +1,14 @@
 ﻿@using MauiGpt.Data
 @using MauiGpt.Dto
+
 @inject SettingsService SettingsService
+
 <div class="horizontal-container">
     <p class="text" style="flex: 1">Model</p>
-    <select style="flex: 5" id="settings-model" value="@_currentModelId" @onchange="OnSelectChanged" >
+    <select style="flex: 5" id="settings-model" value="@_currentModelId" @onchange="OnSelectChanged" @onmousedown="OnSelectOpen">
         @foreach (var model in _models)
         {
-            <option value="@model.Id" selected>@model.Name</option>
+            <option value="@model.Id">@model.Name</option>
         }
     </select>
 </div>
@@ -31,4 +33,10 @@
         _models = SettingsService.GetAll().ToList();
         _currentModelId = SettingsService.GetCurrent()?.Id ?? -1;
     }
+
+    private void OnSelectOpen()
+    {
+        _models = SettingsService.GetAll().ToList();
+    }
+
 }

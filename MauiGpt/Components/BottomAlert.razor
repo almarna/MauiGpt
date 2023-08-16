@@ -1,12 +1,15 @@
 ﻿@if (!string.IsNullOrWhiteSpace(_message))
 {
-    <div style="position: fixed; bottom: 2%; left: 20%; right: 20%; background-color: #f44336; color: white; padding: 10px; border-radius: 0.2em;">
+    <div class="@($"alert {Level}")">
         @_message
     </div>
 }
 
 @code {
-    public string _message;
+    private string _message;
+
+    [Parameter]
+    public string Level { get; set; }
 
     [Parameter]
     public string Message
@@ -18,7 +21,7 @@
     private async Task SetMessageAsync(string value)
     {
         _message = value;
-        await Task.Delay(5000);
+        await Task.Delay(3000);
         _message = "";
         StateHasChanged();
     }

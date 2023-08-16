@@ -59,10 +59,15 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Remove="Components\BottomAlert.razor.css" />
       <None Remove="Components\SelectModel.razor.css" />
     </ItemGroup>
 
     <ItemGroup>
+      <Content Include="Components\BottomAlert.razor.css">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
       <Content Include="Components\SelectModel.razor.css">
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

@@ -23,7 +23,7 @@ public class OpenAiService
     public OpenAiService(SettingsService settingsService)
     {
         _settingsService = settingsService;
-        SetModelIfChanged();
+        // SetModelIfChanged();
      }
 
     private void SetModelIfChanged()

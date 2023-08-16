@@ -129,7 +129,7 @@
                 ChatMessages.AddQuestion(question);
                 _chatQuestion = "";
                 var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, _cancellationTokenSource.Token);
-                //var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, new CancellationToken());
+    //var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, new CancellationToken());
 
                 if (status == AiAnswerType.Error)
                 {
@@ -141,6 +141,10 @@
                     ChatMessages.AddAnswer(htmlBlocks);
                 }
             }
+        }
+        catch (Exception e)
+        {
+            ChatMessages.AddError($"Error occured: {e.Message}");
         }
         finally
         {

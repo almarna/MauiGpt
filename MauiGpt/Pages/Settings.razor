@@ -57,13 +57,14 @@
         </div>
     </div>
 }
-<BottomAlert Message="@_message" />
+<BottomAlert Message="@_message" Level="@_messageLevel" />
 
 @code {
     private IList<ModelsDto> _models = new List<ModelsDto>();
     private ModelsDto _currentModel = NewModel();
     private bool _showDeleteDialog = false;
-    private string _message = "buu";
+    private string _message = "";
+    private string _messageLevel = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,15 +90,72 @@
 
     private void Save()
     {
-        int id = SettingsService.SaveModel(_currentModel);
-        _models = SettingsService.GetAll().ToList();
-        _currentModel = _models.SingleOrDefault(model => model.Id == id) ?? _models.FirstOrDefault() ?? NewModel();
-        _message = $"Model \"{_currentModel.Name}\" saved";
+        string errorMessage = ValidateFields();
+
+        if (string.IsNullOrWhiteSpace(errorMessage))
+        {
+            int id = SettingsService.SaveModel(_currentModel);
+            _models = SettingsService.GetAll().ToList();
+            _currentModel = _models.SingleOrDefault(model => model.Id == id) ?? _models.FirstOrDefault() ?? NewModel();
+            _messageLevel = "info";
+            _message = $"Model \"{_currentModel.Name}\" is saved";
+        }
+        else
+        {
+            _messageLevel = "warn";
+            _message = errorMessage;
+        }
+
+    }
+
+    private string ValidateFields()
+    {
+        string errorMessage = "";
+        int count = 0;
+        if (string.IsNullOrWhiteSpace(_currentModel.Name))
+        {
+            errorMessage = "Name must not be empty";
+            count++;
+        }
+        if (string.IsNullOrWhiteSpace(_currentModel.Endpoint))
+        {
+            errorMessage = "Endpoint must not be empty";
+            count++;
+        }
+        if (string.IsNullOrWhiteSpace(_currentModel.AuthKey))
+        {
+            errorMessage = "Authentication key must not be empty";
+            count++;
+        }
+        if (string.IsNullOrWhiteSpace(_currentModel.Model))
+        {
+            errorMessage = "Model must not be empty";
+            count++;
+        }
+        if (count > 1)
+        {
+            errorMessage = $"{count} fields are empty";
+        }
+
+        if (string.IsNullOrWhiteSpace(errorMessage))
+        {
+            var model = _models.FirstOrDefault(model => model.Name == _currentModel.Name && model.Id != _currentModel.Id);
+            if (model != null)
+            {
+                errorMessage = "Name need to be unique";
+            }
+        }
+
+        return errorMessage;
     }
 
     private void Delete()
     {
+        _showDeleteDialog = false;
+        var modelName = _currentModel.Name;
         SettingsService.DeleteModel(_currentModel.Id);
         LoadModels();
+        _messageLevel = "info";
+        _message = $"Model \"{modelName}\" is deleted";
     }
 }

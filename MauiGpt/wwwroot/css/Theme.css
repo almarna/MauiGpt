@@ -21,4 +21,8 @@
     --code-icon: #44aa99;
     --ok-button-bg: #44ff44;
     --ok-button-text: #333333;
+    --alert-warning-bg: #ff9999;
+    --alert-warning-text: #ffffdd;
+    --alert-info-bg: #44ff44;
+    --alert-info-text: #ffffdd;
 }
