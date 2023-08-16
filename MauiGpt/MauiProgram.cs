@@ -25,6 +25,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<SettingsService>();
         builder.Services.AddSingleton<OpenAiService>();
         builder.Services.AddSingleton<MarkdownToHtml>();
+        builder.Services.AddSingleton<ChatMessages>();
 
         return builder.Build();
 	}

@@ -3,13 +3,12 @@
 @inject SettingsService SettingsService
 <div class="horizontal-container">
     <p class="text" style="flex: 1">Model</p>
-    <select style="flex: 5" id="settings-model" @bind="_currentModelId">
+    <select style="flex: 5" id="settings-model" value="@_currentModelId" @onchange="OnSelectChanged" >
         @foreach (var model in _models)
         {
             <option value="@model.Id" selected>@model.Name</option>
         }
     </select>
-    <a @onclick="SetModel" class="ok-button" title="Set" style="flex: 1">Set</a>
 </div>
 
 @code {
@@ -21,14 +20,15 @@
         LoadModels();
     }
 
+    void OnSelectChanged(ChangeEventArgs e)
+    {
+        _currentModelId = int.Parse(e.Value?.ToString() ?? "0");
+        SettingsService.SetCurrentModel(_currentModelId);
+    }
+
     private void LoadModels()
     {
         _models = SettingsService.GetAll().ToList();
         _currentModelId = SettingsService.GetCurrent()?.Id ?? -1;
-    }
-
-    private void SetModel()
-    {
-        SettingsService.SetModel(_currentModelId);
     }
 }

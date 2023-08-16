@@ -8,12 +8,13 @@
 @inject IJSRuntime JsRuntime
 @inject OpenAiService OpenAiService
 @inject MarkdownToHtml MarkdownToHtml
+@inject ChatMessages ChatMessages
 
 
 <div class="container">
     <div class="top">
         <div class="scroll-list" @ref="_scrollList">
-            @foreach (var line in _lines)
+            @foreach (var line in ChatMessages.AllMessages)
             {
                 var messageClass = MessageClasses[line.Type];
 
@@ -67,7 +68,7 @@
     private string _chatQuestion;
     private bool _answerInProgress = false;
     private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-    private IList<ChatMessageDto> _lines = new List<ChatMessageDto>();
+    // private IList<ChatMessageDto> _lines = new List<ChatMessageDto>();
 
     private ElementReference _scrollList;
 
@@ -90,17 +91,7 @@
     private async Task CallbackPartMessage(string part)
     {
         IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(part, ColorCodeblock);
-        var temporaryLine = _lines.LastOrDefault();
-        if (temporaryLine?.IsTemporary ?? false)
-        {
-            temporaryLine.HtmlBlocks = htmlBlocks;
-        }
-        else
-        {
-            temporaryLine = ChatMessageDto.GetAnswer(htmlBlocks);
-            temporaryLine.IsTemporary = true;
-            _lines.Add(temporaryLine);
-        }
+        ChatMessages.SetTemporaryLine(htmlBlocks);
 
         StateHasChanged();
     }
@@ -108,33 +99,16 @@
     private void ClearHistory()
     {
         OpenAiService.ClearHistory();
-        AddQuestion("History Cleared!");
+        ChatMessages.AddQuestion("History Cleared!");
     }
 
     private void ClearConversation()
     {
         OpenAiService.ClearHistory();
-        _lines = new List<ChatMessageDto>();
+        ChatMessages.Clear();
     }
 
-    private void AddQuestion(string question)
-    {
-        _lines.Add(ChatMessageDto.GetQuestion(question));
-    }
-
-    private async Task AddAnswer(string answer)
-    {
-        _lines = _lines.Where(item => item.IsTemporary == false).ToList();
-        IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(answer, ColorCodeblock);
-        _lines.Add(ChatMessageDto.GetAnswer(htmlBlocks));
-    }
-
-    private void AddError(string error)
-    {
-        _lines.Add(ChatMessageDto.GetError(error));
-    }
-
-    private void CancelAnswer()
+   private void CancelAnswer()
     {
         _cancellationTokenSource.Cancel();
         _answerInProgress = false;
@@ -147,23 +121,24 @@
         {
             if (string.IsNullOrEmpty(_chatQuestion))
             {
-                AddQuestion("Empty input");
+                ChatMessages.AddQuestion("Empty input");
             }
             else
             {
-                var question = CleanQuestion(_chatQuestion);
-                AddQuestion(question);
+                var question = ChatMessages.CleanQuestion(_chatQuestion);
+                ChatMessages.AddQuestion(question);
                 _chatQuestion = "";
                 var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, _cancellationTokenSource.Token);
                 //var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, new CancellationToken());
 
                 if (status == AiAnswerType.Error)
                 {
-                    AddError(answer);
+                    ChatMessages.AddError(answer);
                 }
                 else
                 {
-                    await AddAnswer(answer);
+                    IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(answer, ColorCodeblock);
+                    ChatMessages.AddAnswer(htmlBlocks);
                 }
             }
         }
@@ -182,14 +157,5 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JsRuntime.InvokeVoidAsync("scrollListToEnd", _scrollList);
-    }
-
-    private string CleanQuestion(string input)
-    {
-        string result = input
-            .Replace("<", "[")
-            .Replace(">", "]");
-
-        return result;
     }
 }

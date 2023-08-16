@@ -2,6 +2,7 @@
 @using MauiGpt.Dto
 @using System.Text
 @using MauiGpt.Data
+@using MauiGpt.Components
 
 @inject SettingsService SettingsService
 
@@ -56,11 +57,13 @@
         </div>
     </div>
 }
+<BottomAlert Message="@_message" />
 
 @code {
     private IList<ModelsDto> _models = new List<ModelsDto>();
     private ModelsDto _currentModel = NewModel();
     private bool _showDeleteDialog = false;
+    private string _message = "buu";
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,6 +92,7 @@
         int id = SettingsService.SaveModel(_currentModel);
         _models = SettingsService.GetAll().ToList();
         _currentModel = _models.SingleOrDefault(model => model.Id == id) ?? _models.FirstOrDefault() ?? NewModel();
+        _message = $"Model \"{_currentModel.Name}\" saved";
     }
 
     private void Delete()

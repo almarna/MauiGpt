@@ -1,0 +1,25 @@
+﻿@if (!string.IsNullOrWhiteSpace(_message))
+{
+    <div style="position: fixed; bottom: 2%; left: 20%; right: 20%; background-color: #f44336; color: white; padding: 10px; border-radius: 0.2em;">
+        @_message
+    </div>
+}
+
+@code {
+    public string _message;
+
+    [Parameter]
+    public string Message
+    {
+        get => _message;
+        set => SetMessageAsync(value);
+    }
+
+    private async Task SetMessageAsync(string value)
+    {
+        _message = value;
+        await Task.Delay(5000);
+        _message = "";
+        StateHasChanged();
+    }
+}
