@@ -4,11 +4,9 @@
 * Lagra connection-inställningar hemligt (Keyvault?)
 * Hantera när historik har för många token
 * Se om man kan utvärdera hur många tokens som används
-* Möjlighet att välja annan model-deployment
 * Kunna välja preprompt
 * Spara undan historik
 * Söka i historik
-* När man går till settings ska chat finnas kvar
 
 ### Fixat 
 * Fixa så att enter-knappen fungerar
@@ -24,3 +22,5 @@
 * Möjlighet att avbryta fråga
 * Se till att returnera kopior när settings hämtas
 * Fixa settings-sida
+* När man går till settings ska chat finnas kvar
+* Möjlighet att välja annan model-deployment

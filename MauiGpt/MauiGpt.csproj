@@ -34,7 +34,7 @@
         <PackageCertificateThumbprint>D2BFC968B851A9C7D381AE2CCED9AA9D8A9F1AF6</PackageCertificateThumbprint>
         <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
         <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-        <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
+        <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
         <GenerateTestArtifacts>True</GenerateTestArtifacts>
         <AppInstallerUri>c:/temp</AppInstallerUri>
         <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
@@ -59,15 +59,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Components\BottomAlert.razor.css" />
       <None Remove="Components\SelectModel.razor.css" />
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="Components\BottomAlert.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
       <Content Include="Components\SelectModel.razor.css">
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

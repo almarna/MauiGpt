@@ -1,8 +1,6 @@
 ﻿@page "/settings"
 @using MauiGpt.Dto
-@using System.Text
 @using MauiGpt.Data
-@using MauiGpt.Components
 
 @inject SettingsService SettingsService
 
@@ -57,7 +55,12 @@
         </div>
     </div>
 }
-<BottomAlert Message="@_message" Level="@_messageLevel" />
+@if (!string.IsNullOrWhiteSpace(_message))
+{
+    <div class="@($"alert {_messageLevel}")">
+        @_message
+    </div>
+}
 
 @code {
     private IList<ModelsDto> _models = new List<ModelsDto>();
@@ -88,7 +91,7 @@
         return new ModelsDto { Name = "", AuthKey = "", Endpoint = "", Model = "", Id = -1 };
     }
 
-    private void Save()
+    private async Task Save()
     {
         string errorMessage = ValidateFields();
 
@@ -97,13 +100,12 @@
             int id = SettingsService.SaveModel(_currentModel);
             _models = SettingsService.GetAll().ToList();
             _currentModel = _models.SingleOrDefault(model => model.Id == id) ?? _models.FirstOrDefault() ?? NewModel();
-            _messageLevel = "info";
-            _message = $"Model \"{_currentModel.Name}\" is saved";
+
+            ShowAlert($"Model \"{_currentModel.Name}\" is saved", "info");
         }
         else
         {
-            _messageLevel = "warn";
-            _message = errorMessage;
+            ShowAlert(errorMessage, "warn");
         }
 
     }
@@ -155,7 +157,15 @@
         var modelName = _currentModel.Name;
         SettingsService.DeleteModel(_currentModel.Id);
         LoadModels();
-        _messageLevel = "info";
-        _message = $"Model \"{modelName}\" is deleted";
+        ShowAlert($"Model \"{modelName}\" is deleted", "info");
+    }
+
+    private async Task ShowAlert(string message, string level)
+    {
+        _messageLevel = level;
+        _message = message;
+        await Task.Delay(2000);
+        _message = "";
+        StateHasChanged();
     }
 }
