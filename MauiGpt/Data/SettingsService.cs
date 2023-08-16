@@ -21,8 +21,7 @@ public class SettingsService
 
     public ModelsDto GetCurrent()
     {
-        var current = _settingsDto.Models.SingleOrDefault(dto => dto.Id == _settingsDto.CurrentModel);
-        return current?.Clone();
+        return _settingsDto.GetCurrentModel();
     }
 
     public IEnumerable<ModelsDto> GetAll()
