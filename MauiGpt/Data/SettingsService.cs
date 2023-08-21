@@ -9,14 +9,17 @@ namespace MauiGpt.Data;
 
 public class SettingsService
 {
-    private readonly string _filePath = Path.Combine(AppContext.BaseDirectory, "models.json");
+    private readonly string _filePath;
 
     private SettingsDto _settingsDto = new SettingsDto { CurrentModel = -1, Models = new List<ModelsDto>() };
 
     public SettingsService()
     {
+        string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        _filePath = Path.Combine(folderPath, "models.json");
 
         Load();
+
     }
 
     public ModelsDto GetCurrent()

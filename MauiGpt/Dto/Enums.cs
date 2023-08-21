@@ -3,7 +3,8 @@
 public enum ChatMessageType {
     Question,
     Answer,
-    Error
+    Error,
+    Info
 }
 
 public enum AiAnswerType
@@ -15,5 +16,6 @@ public enum AiAnswerType
 public enum BlockType
 {
     Plain,
-    Code
+    Code,
+    Editable
 }

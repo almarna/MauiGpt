@@ -31,12 +31,17 @@ public class ChatMessages
         AllMessages.Add(ChatMessageDto.GetQuestion(question));
     }
 
+    public void AddInfo(string question)
+    {
+        AllMessages.Add(ChatMessageDto.GetInfo(question));
+    }
+
     public void AddError(string error)
     {
         AllMessages.Add(ChatMessageDto.GetError(error));
     }
 
-    public async Task AddAnswer(IList<HtmlBlock> htmlBlocks)
+    public void AddAnswer(IList<HtmlBlock> htmlBlocks)
     {
         AllMessages = AllMessages.Where(item => item.IsTemporary == false).ToList();
         AllMessages.Add(ChatMessageDto.GetAnswer(htmlBlocks));
@@ -45,8 +50,17 @@ public class ChatMessages
     public static string CleanQuestion(string input)
     {
         string result = input
-            .Replace("<", "[")
-            .Replace(">", "]");
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;");
+
+        return result;
+    }
+
+    public static string UncleanQuestion(string input)
+    {
+        string result = input
+            .Replace("&lt;", "<")
+            .Replace("&gt;", ">");
 
         return result;
     }

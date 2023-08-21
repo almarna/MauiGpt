@@ -1,8 +1,7 @@
 ### TODO
 
 * Skicka in language om det finns till script som färgar kodblock
-* Lagra connection-inställningar hemligt (Keyvault?)
-* Hantera när historik har för många token
+* Hantera när chat har för många token
 * Se om man kan utvärdera hur många tokens som används
 * Kunna välja preprompt
 * Spara undan historik
@@ -24,3 +23,4 @@
 * Fixa settings-sida
 * När man går till settings ska chat finnas kvar
 * Möjlighet att välja annan model-deployment
+* Editera en fråga

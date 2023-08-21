@@ -37,6 +37,15 @@
                                 </code>
                             </pre>
                         }
+                        else if (block.Type == BlockType.Editable)
+                        {
+                            <div>
+                                @((MarkupString)block.Html)
+                            </div>
+                            <a @onclick="() => EditAgain(block.Html)" title="Edit">
+                                <PencilIcon />
+                            </a>
+                        }
                         else
                         {
                             @((MarkupString)block.Html)
@@ -74,6 +83,7 @@
 
     private static readonly Dictionary<ChatMessageType, string> MessageClasses = new()
     {
+        { ChatMessageType.Info, "gpt-info" },
         { ChatMessageType.Question, "gpt-question" },
         { ChatMessageType.Answer, "gpt-answer" },
         { ChatMessageType.Error, "gpt-error" }
@@ -99,7 +109,7 @@
     private void ClearHistory()
     {
         OpenAiService.ClearHistory();
-        ChatMessages.AddQuestion("History Cleared!");
+        ChatMessages.AddInfo("History Cleared!");
     }
 
     private void ClearConversation()
@@ -121,7 +131,7 @@
         {
             if (string.IsNullOrEmpty(_chatQuestion))
             {
-                ChatMessages.AddQuestion("Empty input");
+                ChatMessages.AddInfo("Empty input");
             }
             else
             {
@@ -129,7 +139,6 @@
                 ChatMessages.AddQuestion(question);
                 _chatQuestion = "";
                 var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, _cancellationTokenSource.Token);
-    //var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, new CancellationToken());
 
                 if (status == AiAnswerType.Error)
                 {
@@ -162,4 +171,10 @@
     {
         await JsRuntime.InvokeVoidAsync("scrollListToEnd", _scrollList);
     }
+
+    private void EditAgain(string text)
+    {
+        _chatQuestion = ChatMessages.UncleanQuestion(text);
+    }
+
 }

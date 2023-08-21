@@ -14,18 +14,23 @@ public class ChatMessageDto
 
     public static ChatMessageDto GetQuestion(string question)
     {
-        return GetSingle(ChatMessageType.Question, question);
+        return GetSingle(ChatMessageType.Question, question, BlockType.Editable);
     }
 
     public static ChatMessageDto GetError(string error)
     {
-        return GetSingle(ChatMessageType.Error, error);
+        return GetSingle(ChatMessageType.Error, error, BlockType.Plain);
     }
 
-    private static ChatMessageDto GetSingle(ChatMessageType type, string html)
+    public static ChatMessageDto GetInfo(string error)
+    {
+        return GetSingle(ChatMessageType.Info, error, BlockType.Plain);
+    }
+
+    private static ChatMessageDto GetSingle(ChatMessageType type, string html, BlockType blockType)
     {
         IList<HtmlBlock> htmlBlocks = new List<HtmlBlock>();
-        htmlBlocks.Add(new HtmlBlock { Html = html, Type = BlockType.Plain });
+        htmlBlocks.Add(new HtmlBlock { Html = html, Type = blockType });
         return new ChatMessageDto { Type = type, HtmlBlocks = htmlBlocks };
     }
 }
