@@ -22,7 +22,16 @@ public class MarkdownToHtml
         {
             if (type == MarkdownToHtml.MdText)
             {
-                var html = Markdown.ToHtml(content);
+                var html = "";
+                try
+                {
+                    html = Markdown.ToHtml(content);
+                }
+                catch (Exception e) // Fixlösning för att ibland klarar inte Markdig fragment, men funkar om man omringar det med t.ex. en span
+                {
+                    html = Markdown.ToHtml($"<code>{content}</code>");
+                }
+
                 result.Add(new HtmlBlock { Type = BlockType.Plain, Html = html });
             }
             else

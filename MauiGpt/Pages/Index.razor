@@ -93,7 +93,14 @@
     {
         if (e.Key == "Enter")
         {
-            await AddText();
+            if (e.CtrlKey)
+            {
+ //               _chatQuestion += "#";
+            }
+            else
+            {
+                await AddText();
+            }
         }
     }
 

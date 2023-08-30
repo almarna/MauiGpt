@@ -6,6 +6,7 @@
 * Kunna välja preprompt
 * Spara undan historik
 * Söka i historik
+* Hantera ctrl-enter så man kan ange flera rader
 
 ### Fixat 
 * Fixa så att enter-knappen fungerar
