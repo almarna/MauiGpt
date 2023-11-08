@@ -23,7 +23,6 @@ public class OpenAiService
     public OpenAiService(SettingsService settingsService)
     {
         _settingsService = settingsService;
-        // SetModelIfChanged();
      }
 
     private void SetModelIfChanged()
@@ -44,6 +43,8 @@ public class OpenAiService
                 _openAiClient = new OpenAIClient(
                     new Uri(_currentModel.Endpoint),
                     new AzureKeyCredential(_currentModel.AuthKey));
+
+                _chatCompletionsOptions.DeploymentName = _currentModel.Model;
             }
 
         }
@@ -59,32 +60,13 @@ public class OpenAiService
             _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, question));
 
             var chatCompletionsResponse = await _openAiClient.GetChatCompletionsStreamingAsync(
-                _currentModel.Model,
                 _chatCompletionsOptions,
                 cancellationToken
             );
 
-            var chatResponseBuilder = new StringBuilder();
-
-            var chatChoices = chatCompletionsResponse.Value.GetChoicesStreaming();
-
-            await foreach (var chatChoice in chatChoices)
-            {
-                var chatMessages = chatChoice.GetMessageStreaming();
-                await foreach (var chatMessage in chatMessages)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    if ((chatMessage.Content ?? "") != "")
-                    {
-                        chatResponseBuilder.Append(chatMessage.Content);
-                        await callback(chatResponseBuilder.ToString());
-                    }
-                }
-            }
-
-            _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.Assistant, chatResponseBuilder.ToString()));
-            return (AiAnswerType.Normal, chatResponseBuilder.ToString());
+            var fullMessage = await HandleCallback(chatCompletionsResponse, callback);
+            _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.Assistant, fullMessage));
+            return (AiAnswerType.Normal, fullMessage);
         }
         catch (RequestFailedException azureException)
         {
@@ -96,13 +78,25 @@ public class OpenAiService
         }
     }
 
-    private static async Task LabDelay(Func<string, Task> callback, CancellationToken cancellationToken, int i, int seconds)
+    private static async Task<string> HandleCallback(
+        StreamingResponse<StreamingChatCompletionsUpdate> chatCompletionsResponse,
+        Func<string, Task> callback)
     {
-        await callback($"Delaying {i} ({seconds}s");
+        var chatResponseBuilder = new StringBuilder();
 
-        await Task.Delay(1000*seconds, cancellationToken);
-        await callback("Delay ready");
-  }
+        await foreach (var chatChoice in chatCompletionsResponse)
+        {
+            var message = chatChoice.ContentUpdate ?? "";
+
+            if (message != "")
+            {
+                chatResponseBuilder.Append(message);
+                await callback(chatResponseBuilder.ToString());
+            }
+        }
+
+        return chatResponseBuilder.ToString();
+    }
 
     private static string HandleAzureExceptions(RequestFailedException azureException)
     {
