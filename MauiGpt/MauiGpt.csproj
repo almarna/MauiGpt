@@ -70,10 +70,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Markdig" Version="0.31.0" />
+        <PackageReference Include="Dapper" Version="2.1.15" />
+        <PackageReference Include="Markdig" Version="0.33.0" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.2" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-        <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="7.0.9" />
-        <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.5" />
+        <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="7.0.13" />
+        <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.9" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="1.0.0-beta3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
     <ItemGroup>

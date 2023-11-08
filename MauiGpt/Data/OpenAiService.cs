@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Azure;
 using Azure.AI.OpenAI;
 using MauiGpt.Dto;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 namespace MauiGpt.Data;
 
@@ -51,7 +52,45 @@ public class OpenAiService
 
     [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
     [SuppressMessage("ReSharper", "UseCancellationTokenForIAsyncEnumerable")]
-    public async Task<(AiAnswerType,string)> Ask(string question, Func<string, Task> callback, CancellationToken cancellationToken)
+    //    public async Task<(AiAnswerType,string)> Ask(string question, Func<string, Task> callback, CancellationToken cancellationToken)
+    //    {
+    //        SetModelIfChanged();
+    //        try
+    //        {
+    //            _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, question));
+
+    //            StreamingResponse<StreamingChatCompletionsUpdate> chatCompletionsResponse = await _openAiClient.GetChatCompletionsStreamingAsync(
+    //                _chatCompletionsOptions,
+    //                cancellationToken
+    //            );
+
+    //            var chatResponseBuilder = new StringBuilder();
+    ////            var chatChoices = chatCompletionsResponse.Value.GetChoicesStreaming();
+
+    //            await foreach (var chatChoice in chatCompletionsResponse)
+    //            {
+    //                string message = (chatChoice.ContentUpdate ?? "").Trim();
+    //                if (message != "")
+    //                {
+    //                    chatResponseBuilder.Append(message);
+    //                    await callback(chatResponseBuilder.ToString());
+    //                }
+    //            }
+
+    //            _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.Assistant, chatResponseBuilder.ToString()));
+    //            return (AiAnswerType.Normal, chatResponseBuilder.ToString());
+    //        }
+    //        catch (RequestFailedException azureException)
+    //        {
+    //            return (AiAnswerType.Error, HandleAzureExceptions(azureException));
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            return (AiAnswerType.Error, ex.Message);
+    //        }
+    //    }
+
+    public async Task<(AiAnswerType, string)> Ask(string question, Func<string, Task> callback, CancellationToken cancellationToken)
     {
         SetModelIfChanged();
         try
@@ -95,6 +134,8 @@ public class OpenAiService
             return (AiAnswerType.Error, ex.Message);
         }
     }
+
+
 
     private static async Task LabDelay(Func<string, Task> callback, CancellationToken cancellationToken, int i, int seconds)
     {
