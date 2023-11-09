@@ -4,9 +4,8 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 
-namespace LabSemanticKernel.Lab3;
+namespace MauiGpt.Data.DbInfo;
 
 public class AiFunctions
 {
@@ -22,56 +21,67 @@ public class AiFunctions
         _chatHistory = (OpenAIChatHistory)_chatCompletion.CreateNewChat(prePrompt);
 
         _chatRequestSettings = new OpenAIRequestSettings() { Temperature = 0 };
- 
-    }
-
-    [SKFunction, Description("Add user message."), SKName("AddUserMessage") ]
-    public async Task AddUserMessage([Description("The user message")] string message)
-    {
-        _chatHistory.AddUserMessage(message);
 
     }
 
-    [SKFunction, Description("Reset chat history."), SKName("ResetHistory")]
-    public async Task ResetHistory()
+    public IEnumerable<string> GetHistory()
     {
-        _chatHistory = (OpenAIChatHistory)_chatCompletion.CreateNewChat(_prePrompt);
+        foreach (var chatMessageBase in _chatHistory)
+        {
+            string role = chatMessageBase.Role.ToString();
+            string message = chatMessageBase.Content;
+
+            yield return @$"{role}: {message}";
+        }
     }
 
     [SKFunction, Description("Send a prompt to the LLM."), SKName("Prompt")]
     public async Task<string> Prompt(string prompt)
     {
-        var reply = string.Empty;
         try
         {
-            // Add the question as a user message to the chat history, then send everything to OpenAI.
-            // The chat history is used as context for the prompt
             _chatHistory.AddUserMessage(prompt);
-            reply = await _chatCompletion.GenerateMessageAsync(_chatHistory, _chatRequestSettings);
+            var reply = await _chatCompletion.GenerateMessageAsync(_chatHistory, _chatRequestSettings);
 
-            // Add the interaction to the chat history.
             _chatHistory.AddAssistantMessage(reply);
+            return reply;
         }
         catch (Exception aiex)
         {
-            // Reply with the error message if there is one
-            reply = $"OpenAI returned an error ({aiex.Message}). Please try again.";
+            return $"OpenAI returned an error ({aiex.Message}). Please try again.";
+        }
+    }
+
+        [SKFunction, Description("Add user message."), SKName("AddUserMessage")]
+        public async Task AiAddUserMessage([Description("The user message")] string message)
+        {
+            _chatHistory.AddUserMessage(message);
+
         }
 
-        return reply;
+
+    //[SKFunction, Description("Add user message. Do not user for assistent messages."), SKName("AddUserMessage")]
+    //public async Task AddUserMessage([Description("The user message")] string message)
+    //{
+    //    _chatHistory.AddUserMessage(message);
+
+    //}
+
+    //[SKFunction, Description("Reset chat history."), SKName("ResetHistory")]
+    //public async Task ResetHistory()
+    //{
+    //    _chatHistory = (OpenAIChatHistory)_chatCompletion.CreateNewChat(_prePrompt);
+    //}
+
+    public void AddUserMessage(string message)
+    {
+        _chatHistory.AddUserMessage(message);
 
     }
 
-    //[SKFunction, Description("Get database table definition")]
-    //public async Task<string> DbDescriptionAsync(
-    //    [Description("The database name")] string database,
-    //    [Description("The table name")] string table
-    //)
-    //{
-    //    var sqlInfo = new SqlInfo(database);
-    //    var tableData = await sqlInfo.GetColumnInformationAsync(table);
+    public void ResetHistory()
+    {
+        _chatHistory = (OpenAIChatHistory)_chatCompletion.CreateNewChat(_prePrompt);
+    }
 
-    //    var result = $"{{ database: {database}, table: {table} fields: {tableData}";
-    //    return result;
-    //}
 }

@@ -23,7 +23,7 @@ public static class MauiProgram
 #endif
 
         builder.Services.AddSingleton<SettingsService>();
-        builder.Services.AddSingleton<OpenAiService>();
+        builder.Services.AddSingleton<ChatServiceFactory>();
         builder.Services.AddSingleton<MarkdownToHtml>();
         builder.Services.AddSingleton<ChatMessages>();
 

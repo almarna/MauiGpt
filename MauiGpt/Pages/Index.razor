@@ -3,10 +3,11 @@
 @using Markdig
 @using MauiGpt.Dto
 @using System.Text
+@using MauiGpt.Interfaces
 @using MauiGpt.Svg
 
 @inject IJSRuntime JsRuntime
-@inject OpenAiService OpenAiService
+@inject ChatServiceFactory chatServiceFactory
 @inject MarkdownToHtml MarkdownToHtml
 @inject ChatMessages ChatMessages
 
@@ -77,9 +78,10 @@
     private string _chatQuestion;
     private bool _answerInProgress = false;
     private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-    // private IList<ChatMessageDto> _lines = new List<ChatMessageDto>();
 
     private ElementReference _scrollList;
+
+    private IChatService _chatService;
 
     private static readonly Dictionary<ChatMessageType, string> MessageClasses = new()
     {
@@ -88,6 +90,11 @@
         { ChatMessageType.Answer, "gpt-answer" },
         { ChatMessageType.Error, "gpt-error" }
     };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _chatService = chatServiceFactory.GetChatService(ChatServiceType.Db);
+    }
 
     private async Task QuestionKeyUp(KeyboardEventArgs e)
     {
@@ -104,7 +111,6 @@
         }
     }
 
-
     private async Task CallbackPartMessage(string part)
     {
         IList<HtmlBlock> htmlBlocks = await MarkdownToHtml.Convert(part, ColorCodeblock);
@@ -113,15 +119,15 @@
         StateHasChanged();
     }
 
-    private void ClearHistory()
+    private async Task ClearHistory()
     {
-        OpenAiService.ClearHistory();
+        await _chatService.ClearHistory();
         ChatMessages.AddInfo("History Cleared!");
     }
 
-    private void ClearConversation()
+    private async Task ClearConversation()
     {
-        OpenAiService.ClearHistory();
+        await _chatService.ClearHistory();
         ChatMessages.Clear();
     }
 
@@ -145,7 +151,7 @@
                 var question = ChatMessages.CleanQuestion(_chatQuestion);
                 ChatMessages.AddQuestion(question);
                 _chatQuestion = "";
-                var (status, answer) = await OpenAiService.Ask(question, CallbackPartMessage, _cancellationTokenSource.Token);
+                var (status, answer) = await _chatService.Ask(question, CallbackPartMessage, _cancellationTokenSource.Token);
 
                 if (status == AiAnswerType.Error)
                 {

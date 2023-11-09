@@ -4,10 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Azure;
 using Azure.AI.OpenAI;
 using MauiGpt.Dto;
+using MauiGpt.Interfaces;
+using System.Threading;
 
 namespace MauiGpt.Data;
 
-public class OpenAiService
+public class OpenAiService: IChatService
 {
     private readonly SettingsService _settingsService;
     private OpenAIClient _openAiClient;
@@ -44,7 +46,7 @@ public class OpenAiService
                     new Uri(_currentModel.Endpoint),
                     new AzureKeyCredential(_currentModel.AuthKey));
 
-                _chatCompletionsOptions.DeploymentName = _currentModel.Model;
+//                _chatCompletionsOptions.DeploymentName = _currentModel.Model;
             }
 
         }
@@ -60,11 +62,12 @@ public class OpenAiService
             _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, question));
 
             var chatCompletionsResponse = await _openAiClient.GetChatCompletionsStreamingAsync(
+                _currentModel.Model,
                 _chatCompletionsOptions,
                 cancellationToken
             );
 
-            var fullMessage = await HandleCallback(chatCompletionsResponse, callback);
+            var fullMessage = await HandleCallback(chatCompletionsResponse, callback, cancellationToken);
             _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.Assistant, fullMessage));
             return (AiAnswerType.Normal, fullMessage);
         }
@@ -79,19 +82,24 @@ public class OpenAiService
     }
 
     private static async Task<string> HandleCallback(
-        StreamingResponse<StreamingChatCompletionsUpdate> chatCompletionsResponse,
-        Func<string, Task> callback)
+        Response<StreamingChatCompletions> chatCompletionsResponse,
+        Func<string, Task> callback,
+        CancellationToken cancellationToken)
     {
         var chatResponseBuilder = new StringBuilder();
 
-        await foreach (var chatChoice in chatCompletionsResponse)
+        await foreach (var chatChoice in chatCompletionsResponse.Value.GetChoicesStreaming())
         {
-            var message = chatChoice.ContentUpdate ?? "";
-
-            if (message != "")
+            var chatMessages = chatChoice.GetMessageStreaming();
+            await foreach (var chatMessage in chatMessages)
             {
-                chatResponseBuilder.Append(message);
-                await callback(chatResponseBuilder.ToString());
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if ((chatMessage.Content ?? "") != "")
+                {
+                    chatResponseBuilder.Append(chatMessage.Content);
+                    await callback(chatResponseBuilder.ToString());
+                }
             }
         }
 
@@ -113,8 +121,9 @@ public class OpenAiService
         };
     }
 
-    public void ClearHistory()
+    public Task ClearHistory()
     {
         _chatCompletionsOptions.Messages.Clear();
+        return Task.CompletedTask;
     }
 }
