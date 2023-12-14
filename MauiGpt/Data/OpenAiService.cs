@@ -11,9 +11,9 @@ namespace MauiGpt.Data;
 
 public class OpenAiService: IChatService
 {
-    private readonly SettingsService _settingsService;
-    private OpenAIClient _openAiClient;
-    private ModelsDto _currentModel;
+//    private readonly SettingsService _settingsService;
+    private readonly OpenAIClient _openAiClient;
+    private readonly ModelsDto _currentModel;
 
     private readonly ChatCompletionsOptions _chatCompletionsOptions = new()
     {
@@ -22,41 +22,18 @@ public class OpenAiService: IChatService
         }
     };
 
-    public OpenAiService(SettingsService settingsService)
+    public OpenAiService(ModelsDto model)
     {
-        _settingsService = settingsService;
-     }
-
-    private void SetModelIfChanged()
-    {
-        var modelsDto = _settingsService.GetCurrent();
-
-        if ((_currentModel?.IsEquivalent(modelsDto) ?? false) == false)
-        {
-            _currentModel = modelsDto;
-            ClearHistory();
-
-            if (_currentModel == null)
-            {
-                _openAiClient = null;
-            }
-            else
-            {
-                _openAiClient = new OpenAIClient(
-                    new Uri(_currentModel.Endpoint),
-                    new AzureKeyCredential(_currentModel.AuthKey));
-
-//                _chatCompletionsOptions.DeploymentName = _currentModel.Model;
-            }
-
-        }
+        _currentModel = model;
+        _openAiClient = new OpenAIClient(
+            new Uri(_currentModel.Endpoint),
+            new AzureKeyCredential(_currentModel.AuthKey));
     }
 
     [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
     [SuppressMessage("ReSharper", "UseCancellationTokenForIAsyncEnumerable")]
     public async Task<(AiAnswerType,string)> Ask(string question, Func<string, Task> callback, CancellationToken cancellationToken)
     {
-        SetModelIfChanged();
         try
         {
             _chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, question));
@@ -81,6 +58,8 @@ public class OpenAiService: IChatService
         }
     }
 
+    [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
+    [SuppressMessage("ReSharper", "UseCancellationTokenForIAsyncEnumerable")]
     private static async Task<string> HandleCallback(
         Response<StreamingChatCompletions> chatCompletionsResponse,
         Func<string, Task> callback,

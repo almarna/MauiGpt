@@ -8,7 +8,8 @@ namespace MauiGpt.Data
 {
     public static class SimpleMemLogger
     {
-        private static IList<string> _lines = new List<string>();
+        private static List<string> _lines = new List<string>();
+        public static IReadOnlyList<string> Lines => _lines;
 
         public static void Log(string message)
         {
@@ -19,6 +20,7 @@ namespace MauiGpt.Data
         {
             _lines = new List<string>();
         }
+
 
         public new static string ToString(int maxLineLength = 0)
         {

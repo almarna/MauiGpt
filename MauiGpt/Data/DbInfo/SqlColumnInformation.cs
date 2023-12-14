@@ -1,4 +1,4 @@
-﻿namespace LabSemanticKernel.Lab3;
+﻿namespace MauiGpt.Data.DbInfo;
 
 public class SqlColumnInformation
 {

@@ -3,47 +3,34 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 namespace MauiGpt.Data.DbInfo;
 
 public class AiFunctions
 {
+    private readonly ChatMemory _chatMemory;
     private readonly IChatCompletion _chatCompletion;
-    private OpenAIChatHistory _chatHistory;
     private readonly AIRequestSettings _chatRequestSettings;
     private readonly string _prePrompt;
 
-    public AiFunctions(IKernel kernel, string prePrompt)
+    public AiFunctions(IKernel kernel, ChatMemory chatMemory)
     {
+        _chatMemory = chatMemory;
         _chatCompletion = kernel.GetService<IChatCompletion>();
-        _prePrompt = prePrompt;
-        _chatHistory = (OpenAIChatHistory)_chatCompletion.CreateNewChat(prePrompt);
 
         _chatRequestSettings = new OpenAIRequestSettings() { Temperature = 0 };
 
     }
 
-    public IEnumerable<string> GetHistory()
-    {
-        foreach (var chatMessageBase in _chatHistory)
-        {
-            string role = chatMessageBase.Role.ToString();
-            string message = chatMessageBase.Content;
-
-            yield return @$"{role}: {message}";
-        }
-    }
-
-    [SKFunction, Description("Send a prompt to the LLM."), SKName("Prompt")]
+    [SKFunction, Description("Send a prompt to the LLM. This function uses the chat-history and current prompt to return a meaningful text answer to the user"), SKName("Prompt")]
     public async Task<string> Prompt(string prompt)
     {
         try
         {
-            _chatHistory.AddUserMessage(prompt);
-            var reply = await _chatCompletion.GenerateMessageAsync(_chatHistory, _chatRequestSettings);
+ //           _chatMemory.AddMessage(AuthorRole.User, prompt);
+            var reply = await _chatCompletion.GenerateMessageAsync(_chatMemory.History, _chatRequestSettings);
 
-            _chatHistory.AddAssistantMessage(reply);
+            _chatMemory.AddMessage(AuthorRole.Assistant, reply);
             return reply;
         }
         catch (Exception aiex)
@@ -55,7 +42,7 @@ public class AiFunctions
         [SKFunction, Description("Add user message."), SKName("AddUserMessage")]
         public async Task AiAddUserMessage([Description("The user message")] string message)
         {
-            _chatHistory.AddUserMessage(message);
+            _chatMemory.AddMessage(AuthorRole.System, message);
 
         }
 
@@ -72,16 +59,4 @@ public class AiFunctions
     //{
     //    _chatHistory = (OpenAIChatHistory)_chatCompletion.CreateNewChat(_prePrompt);
     //}
-
-    public void AddUserMessage(string message)
-    {
-        _chatHistory.AddUserMessage(message);
-
-    }
-
-    public void ResetHistory()
-    {
-        _chatHistory = (OpenAIChatHistory)_chatCompletion.CreateNewChat(_prePrompt);
-    }
-
 }

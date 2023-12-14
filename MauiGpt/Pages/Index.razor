@@ -7,7 +7,7 @@
 @using MauiGpt.Svg
 
 @inject IJSRuntime JsRuntime
-@inject ChatServiceFactory chatServiceFactory
+@inject ChatServiceFactory ChatServiceFactoryInstance
 @inject MarkdownToHtml MarkdownToHtml
 @inject ChatMessages ChatMessages
 
@@ -54,6 +54,19 @@
                     }
                 </div>
             }
+            
+            @if (_showLog)
+            {
+                    <pre>
+                        <code class='hljs'> 
+                            <b>Logs</b><br/>--------------------------------------------------<br/>
+                            @foreach (var line in SimpleMemLogger.Lines)
+                            {
+                                @line<br />
+                            }
+                        </code>
+                    </pre>
+            }
         </div>
     </div>
     
@@ -63,6 +76,7 @@
             <a @onclick="AddText" title="Send" class="chat-input-icon"><SendIcon/></a>
             <a @onclick="ClearHistory" title="Clear history" class="chat-input-icon"><SkipBackIcon/></a>
             <a @onclick="ClearConversation" title="Clear conversation" class="chat-input-icon"><TrashIcon/></a>
+            <a @onclick="ToggleShowLog" title="Log" class="chat-input-icon"><LogsIcon /></a>
         </div>
         @if (_answerInProgress)
         {
@@ -80,8 +94,7 @@
     private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
     private ElementReference _scrollList;
-
-    private IChatService _chatService;
+    private bool _showLog = false;
 
     private static readonly Dictionary<ChatMessageType, string> MessageClasses = new()
     {
@@ -93,7 +106,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _chatService = chatServiceFactory.GetChatService(ChatServiceType.Db);
+    }
+
+    private void ToggleShowLog()
+    {
+        _showLog = !_showLog;
     }
 
     private async Task QuestionKeyUp(KeyboardEventArgs e)
@@ -121,13 +138,13 @@
 
     private async Task ClearHistory()
     {
-        await _chatService.ClearHistory();
+        await ChatServiceFactoryInstance.GetChatService().ClearHistory();
         ChatMessages.AddInfo("History Cleared!");
     }
 
     private async Task ClearConversation()
     {
-        await _chatService.ClearHistory();
+        await ChatServiceFactoryInstance.GetChatService().ClearHistory();
         ChatMessages.Clear();
     }
 
@@ -151,7 +168,7 @@
                 var question = ChatMessages.CleanQuestion(_chatQuestion);
                 ChatMessages.AddQuestion(question);
                 _chatQuestion = "";
-                var (status, answer) = await _chatService.Ask(question, CallbackPartMessage, _cancellationTokenSource.Token);
+                var (status, answer) = await ChatServiceFactoryInstance.GetChatService().Ask(question, CallbackPartMessage, _cancellationTokenSource.Token);
 
                 if (status == AiAnswerType.Error)
                 {

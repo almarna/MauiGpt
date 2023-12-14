@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LabSemanticKernel.Lab3;
+﻿using MauiGpt.Data.DbInfo;
 using MauiGpt.Dto;
 using MauiGpt.Interfaces;
 
@@ -13,18 +8,31 @@ namespace MauiGpt.Data
     {
         private readonly SettingsService _settingsService;
 
+        private ModelsDto _cachedModel;
+        private IChatService _chatService;
+
         public ChatServiceFactory(SettingsService settingsService)
         {
             _settingsService = settingsService;
         }
-        public IChatService GetChatService(ChatServiceType type)
+        public IChatService GetChatService()
         {
-            return type switch
+            var modelsDto = _settingsService.GetCurrent();
+            if ((_cachedModel?.IsEquivalent(modelsDto) ?? false) == false)
             {
-                ChatServiceType.Db => new AiDbService(_settingsService),
-                ChatServiceType.Gpt => new OpenAiService(_settingsService),
-                _ => new OpenAiService(_settingsService)
-            };
+                _cachedModel = modelsDto.Clone();
+                if (modelsDto.UseSemanticKernel)
+                {
+                    _chatService = new AiDbService(_cachedModel);
+                }
+                else
+                {
+                    _chatService = new OpenAiService(_cachedModel);
+
+                }
+            }
+
+            return _chatService;
         }
     }
 }

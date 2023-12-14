@@ -1,27 +1,23 @@
 ﻿using System.ComponentModel;
-using MauiGpt.Data.DbInfo;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 using Newtonsoft.Json;
 
-namespace LabSemanticKernel.Lab3;
+namespace MauiGpt.Data.DbInfo;
 
 public class DbFunctions
 {
     private readonly IDictionary<string, string> _databases;
-    private readonly AiFunctions _lab;
+    private readonly ChatMemory _chatMemory;
 
-    public DbFunctions(IDictionary<string, string> databases, AiFunctions lab)
+
+    public DbFunctions(IDictionary<string, string> databases, ChatMemory chatMemory)
     {
         _databases = databases;
-        _lab = lab;
+        _chatMemory = chatMemory;
     }
 
-     [SKFunction, Description("Get database table definition.")]
+     [SKFunction, Description("Get database table definition from SQL server. Given a database name and a table name this function will return a table definition in json format.")]
     public async Task<string> DbDescriptionAsync(
         [Description("The database name")] string database,
         [Description("The table name")] string table
@@ -45,7 +41,7 @@ public class DbFunctions
 
             var result = $"Table description in json format: {{ database: {database}, table: {table}, fields: {serialized} }}";
 
-            _lab.AddUserMessage(result);
+            _chatMemory.AddMessage(AuthorRole.User, result);
             return result;
         }
         catch (Exception e)
