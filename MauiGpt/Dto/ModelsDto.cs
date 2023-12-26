@@ -7,10 +7,15 @@ public class ModelsDto
     public string Endpoint { get; set; }
     public string AuthKey { get; set; }
     public string Model { get; set; }
+    public bool UseSemanticKernel { get; set; }
+    public Dictionary<string, string> ConnectionStrings { get; set; } = new Dictionary<string, string>();
 
     public ModelsDto Clone()
     {
-        return (ModelsDto)MemberwiseClone();
+        var clone = (ModelsDto)MemberwiseClone();
+        clone.ConnectionStrings = new Dictionary<string, string>(this.ConnectionStrings);
+
+        return clone;
     }
 
     public bool IsEquivalent(ModelsDto otherModel)
@@ -20,6 +25,17 @@ public class ModelsDto
             return false;
         }
 
-        return otherModel.Endpoint == Endpoint && otherModel.AuthKey == AuthKey && otherModel.Model == Model;
+        var localConnStr = ConnectionStrings ?? new Dictionary<string, string>();
+        var otherConnStr = otherModel.ConnectionStrings ?? new Dictionary<string, string>();
+
+
+        if (localConnStr.Count != otherConnStr.Count)
+        {
+            return false;
+        }
+
+        bool allConnectionStringsEqual = localConnStr.OrderBy(kvp => kvp.Key).SequenceEqual(otherConnStr.OrderBy(kvp => kvp.Key));
+
+        return allConnectionStringsEqual && otherModel.Endpoint == Endpoint && otherModel.AuthKey == AuthKey && otherModel.Model == Model;
     }
 }
