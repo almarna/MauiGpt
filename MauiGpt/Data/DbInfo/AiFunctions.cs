@@ -8,15 +8,27 @@ namespace MauiGpt.Data.DbInfo;
 
 public class AiFunctions
 {
+    private readonly OpenAiService _openAiService;
     private readonly ChatMemory _chatMemory;
-    private readonly IChatCompletion _chatCompletion;
     private readonly AIRequestSettings _chatRequestSettings;
-    private readonly string _prePrompt;
 
-    public AiFunctions(IKernel kernel, ChatMemory chatMemory)
+    public Func<string, Task> Callback { get; set; }
+
+    private async Task RunCallback(string message)
     {
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            if (Callback != null)
+            {
+                await Callback.Invoke(message);
+            }
+        });
+    }
+
+    public AiFunctions(OpenAiService openAiService, ChatMemory chatMemory)
+    {
+        _openAiService = openAiService;
         _chatMemory = chatMemory;
-        _chatCompletion = kernel.GetService<IChatCompletion>();
 
         _chatRequestSettings = new OpenAIRequestSettings() { Temperature = 0 };
 
@@ -27,8 +39,8 @@ public class AiFunctions
     {
         try
         {
- //           _chatMemory.AddMessage(AuthorRole.User, prompt);
-            var reply = await _chatCompletion.GenerateMessageAsync(_chatMemory.History, _chatRequestSettings);
+            _openAiService.SetHistory(_chatMemory.GetHistory());
+            var (anwswerType, reply) = await _openAiService.Ask(prompt, RunCallback, CancellationToken.None);
 
             _chatMemory.AddMessage(AuthorRole.Assistant, reply);
             return reply;
@@ -45,18 +57,4 @@ public class AiFunctions
             _chatMemory.AddMessage(AuthorRole.System, message);
 
         }
-
-
-    //[SKFunction, Description("Add user message. Do not user for assistent messages."), SKName("AddUserMessage")]
-    //public async Task AddUserMessage([Description("The user message")] string message)
-    //{
-    //    _chatHistory.AddUserMessage(message);
-
-    //}
-
-    //[SKFunction, Description("Reset chat history."), SKName("ResetHistory")]
-    //public async Task ResetHistory()
-    //{
-    //    _chatHistory = (OpenAIChatHistory)_chatCompletion.CreateNewChat(_prePrompt);
-    //}
 }

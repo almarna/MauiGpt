@@ -1,6 +1,7 @@
 ﻿namespace MauiGpt.Dto;
 
-public enum ChatMessageType {
+public enum ChatMessageType
+{
     Question,
     Answer,
     Error,
@@ -18,4 +19,12 @@ public enum BlockType
     Plain,
     Code,
     Editable
+}
+
+public enum ChatItemTypes
+{
+    System,
+    Assistent,
+    User,
+    Tool
 }

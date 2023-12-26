@@ -1,6 +1,6 @@
 ﻿namespace MauiGpt.Data.DbInfo;
 
-public class SqlColumnInformation
+public class ColumnInfoDto
 {
     public string COLUMN_NAME { get; set; }
     public string DATA_TYPE { get; set; }

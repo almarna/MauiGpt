@@ -1,4 +1,6 @@
 ﻿using Azure.AI.OpenAI;
+using MauiGpt.Dto;
+using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -38,5 +40,33 @@ public class ChatMemory
 
             yield return @$"{role}: {message}";
         }
+    }
+
+    private readonly Dictionary<ChatItemTypes, AuthorRole> _chatItemTranslation = new()
+    {
+        { ChatItemTypes.Assistent, AuthorRole.Assistant },
+        { ChatItemTypes.System, AuthorRole.System },
+        { ChatItemTypes.User, AuthorRole.User },
+        { ChatItemTypes.Tool, AuthorRole.Tool },
+    };
+
+    public void SetHistory(IEnumerable<ChatItemDto> history)
+    {
+        History = (OpenAIChatHistory)_chatCompletion.CreateNewChat(_prePrompt);
+
+        foreach (var historyItem in history)
+        {
+            History.AddMessage(_chatItemTranslation[historyItem.Type], historyItem.Text);
+        }
+    }
+
+    public IEnumerable<ChatItemDto> GetHistory()
+    {
+        return History.Select(message => new ChatItemDto { Text = message.Content, Type = GetChatItemDtoType(message.Role) });
+    }
+
+    private ChatItemTypes GetChatItemDtoType(AuthorRole messageRole)
+    {
+        return _chatItemTranslation.Single(pair => pair.Value == messageRole).Key;
     }
 }

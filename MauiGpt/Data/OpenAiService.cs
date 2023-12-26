@@ -6,12 +6,12 @@ using Azure.AI.OpenAI;
 using MauiGpt.Dto;
 using MauiGpt.Interfaces;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace MauiGpt.Data;
 
 public class OpenAiService: IChatService
 {
-//    private readonly SettingsService _settingsService;
     private readonly OpenAIClient _openAiClient;
     private readonly ModelsDto _currentModel;
 
@@ -92,7 +92,7 @@ public class OpenAiService: IChatService
             "content_filter" => "Question content is inappropriate!",
             "model_not_found" => "Requested model is not available.",
             "max_tokens_exceeded" => "Input text exceeds maximum tokens allowed.",
-            "input_too_long" => "Inpu t text exceeds maximum length allowed.",
+            "input_too_long" => "Input text exceeds maximum length allowed.",
             "invalid_request" => "Request format is incorrect.",
             "authentication_failed" => "Api key is invalid or expired.",
 
@@ -100,9 +100,36 @@ public class OpenAiService: IChatService
         };
     }
 
-    public Task ClearHistory()
+    public void ClearHistory()
     {
         _chatCompletionsOptions.Messages.Clear();
-        return Task.CompletedTask;
+    }
+
+    private readonly Dictionary<ChatItemTypes, ChatRole> _chatItemTranslation = new()
+    {
+        { ChatItemTypes.Assistent, ChatRole.Assistant },
+        { ChatItemTypes.System, ChatRole.System },
+        { ChatItemTypes.User, ChatRole.User },
+        { ChatItemTypes.Tool, ChatRole.Tool },
+    };
+
+    public void SetHistory(IEnumerable<ChatItemDto> history)
+    {
+        _chatCompletionsOptions.Messages.Clear();
+
+        foreach (var historyItem in history)
+        {
+            _chatCompletionsOptions.Messages.Add(new ChatMessage(_chatItemTranslation[historyItem.Type], historyItem.Text));
+        }
+    }
+
+    public IEnumerable<ChatItemDto> GetHistory()
+    {
+        return _chatCompletionsOptions.Messages.Select(message => new ChatItemDto { Text = message.Content, Type = GetChatItemDtoType(message.Role) });
+    }
+
+    private ChatItemTypes GetChatItemDtoType(ChatRole messageRole)
+    {
+         return _chatItemTranslation.Single(pair => pair.Value == messageRole).Key;
     }
 }

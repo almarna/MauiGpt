@@ -21,15 +21,9 @@ namespace MauiGpt.Data
             if ((_cachedModel?.IsEquivalent(modelsDto) ?? false) == false)
             {
                 _cachedModel = modelsDto.Clone();
-                if (modelsDto.UseSemanticKernel)
-                {
-                    _chatService = new AiDbService(_cachedModel);
-                }
-                else
-                {
-                    _chatService = new OpenAiService(_cachedModel);
-
-                }
+                _chatService = modelsDto.UseSemanticKernel
+                    ? new AiDbService(_cachedModel)
+                    : new OpenAiService(_cachedModel);
             }
 
             return _chatService;

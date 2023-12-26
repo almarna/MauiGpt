@@ -10,7 +10,6 @@ namespace MauiGpt.Data.DbInfo;
 
 public class AiDbService: IChatService
 {
-    //  private string prePrompt = "You are a skillful developer. Your answers are precise and descriptive.";
     private const string prePrompt = "As an AI specialized in data processing, I can fetch table definitions from a database, analyze the structure, and gather all necessary details. " +
                                      "For this, I just need the specific databasename and tables you are interested in.";
 
@@ -32,9 +31,11 @@ public class AiDbService: IChatService
         )
         .Build();
 
+        var openAiService = new OpenAiService(modelConfig);
+
         _chatMemory = new ChatMemory(_kernel, prePrompt);
 
-        _aiFunctions = new AiFunctions(_kernel, _chatMemory);
+        _aiFunctions = new AiFunctions(openAiService, _chatMemory);
         _dbFunctions = new DbFunctions(modelConfig.ConnectionStrings, _chatMemory);
 
         _kernel.ImportFunctions(_aiFunctions);
@@ -49,7 +50,7 @@ public class AiDbService: IChatService
         {
             
             SimpleMemLogger.Reset();
-            var answer = await GetAnswer(question);
+            var answer = await GetAnswer(question, callback);
 
             var lastHistory = _chatMemory.History.Last();
 
@@ -69,17 +70,31 @@ public class AiDbService: IChatService
         }
     }
 
-    public async Task ClearHistory()
+    void IChatService.ClearHistory()
     {
         _chatMemory.Reset();
         _planner = new SequentialPlanner(_kernel);
     }
 
-    async Task<string> GetAnswer(string question)
+    public void SetHistory(IEnumerable<ChatItemDto> history)
     {
-        _chatMemory.AddMessage(AuthorRole.User, question);
+        _chatMemory.SetHistory(history);
+        _planner = new SequentialPlanner(_kernel);
+    }
+
+    public IEnumerable<ChatItemDto> GetHistory()
+    {
+        return _chatMemory.GetHistory();
+    }
+
+    async Task<string> GetAnswer(string question, Func<string, Task> callback)
+    {
+        _aiFunctions.Callback = callback;
+
         try
         {
+            _chatMemory.AddMessage(AuthorRole.User, question);
+            await callback("Creating plan...");
             var plan = await _planner.CreatePlanAsync(question);
             var last = plan.Steps.Last();
             bool lastIsLLM = last.Name == "Prompt";
@@ -88,14 +103,19 @@ public class AiDbService: IChatService
                 plan.AddSteps(new Plan("Send a prompt to the LLM.", _kernel.Functions.GetFunction("Prompt")));
             }
             LogPlan(plan, !lastIsLLM);
+            await callback("Running plan...");
+
+           
+
             var result = await _kernel.RunAsync(plan);
 
-            var answer = result.GetValue<string>()!.Trim();
+            var answer = result.GetValue<string>().Trim();
             return answer;
         }
         catch (Exception e) // Panikåtgärd. Kör LLM om planner inte fungerar
         {
             LogNoPlan(e.Message);
+            await callback("Plan has failed. Running LLM");
             var result = await _kernel.RunAsync(_kernel.Functions.GetFunction("Prompt"), new ContextVariables(question));
             return result.GetValue<string>()!.Trim();
         }

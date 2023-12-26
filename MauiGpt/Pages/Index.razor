@@ -76,7 +76,7 @@
             <a @onclick="AddText" title="Send" class="chat-input-icon"><SendIcon/></a>
             <a @onclick="ClearHistory" title="Clear history" class="chat-input-icon"><SkipBackIcon/></a>
             <a @onclick="ClearConversation" title="Clear conversation" class="chat-input-icon"><TrashIcon/></a>
-            <a @onclick="ToggleShowLog" title="Log" class="chat-input-icon"><LogsIcon /></a>
+            @* <a @onclick="ToggleShowLog" title="Log" class="chat-input-icon"><LogsIcon /></a> *@
         </div>
         @if (_answerInProgress)
         {
@@ -104,9 +104,9 @@
         { ChatMessageType.Error, "gpt-error" }
     };
 
-    protected override async Task OnInitializedAsync()
-    {
-    }
+    // protected override async Task OnInitializedAsync()
+    // {
+    // }
 
     private void ToggleShowLog()
     {
@@ -126,6 +126,10 @@
                 await AddText();
             }
         }
+        else if (e.Key == "l" && e.CtrlKey == true)
+        {
+            ToggleShowLog();
+        }
     }
 
     private async Task CallbackPartMessage(string part)
@@ -136,15 +140,15 @@
         StateHasChanged();
     }
 
-    private async Task ClearHistory()
+    private void ClearHistory()
     {
-        await ChatServiceFactoryInstance.GetChatService().ClearHistory();
+        ChatServiceFactoryInstance.GetChatService().ClearHistory();
         ChatMessages.AddInfo("History Cleared!");
     }
 
-    private async Task ClearConversation()
+    private void ClearConversation()
     {
-        await ChatServiceFactoryInstance.GetChatService().ClearHistory();
+        ChatServiceFactoryInstance.GetChatService().ClearHistory();
         ChatMessages.Clear();
     }
 
